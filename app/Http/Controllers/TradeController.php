@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 use App\Models\Trade;
+use App\Models\Project;
+use App\Models\Item;
 
 class TradeController extends Controller
 {
@@ -46,7 +48,7 @@ class TradeController extends Controller
                     'actual' => $trade->actual,
                     'project_id' => $trade->project_id,
                     'enable' => $trade->enable,
-                    // 'delete' => Item::where('trade_id', $trade->id)->first() ? false : true,
+                    'delete' => Item::where('trade_id', $trade->id)->first() ? false : true,
                 ],
             ),
             'filters' => request()->all(['search', 'field', 'direction'])
@@ -55,20 +57,28 @@ class TradeController extends Controller
 
     public function create()
     {
-        return Inertia::render('Trades/Create');
+        return Inertia::render('Trades/Create', [
+            'projects' => Project::all(),
+        ]);
     }
 
     public function store()
     {
         Request::validate([
-            'name' => ['required', 'unique:agents', 'max:255'],
+            'name' => ['required', 'unique:trades', 'max:255'],
 
         ]);
         $trade = Trade::create([
             'name' => strtoupper(Request::input('name')),
+            'start' => Request::input('start'),
+            'end' => Request::input('end'),
+            'revenue' => Request::input('revenue'),
+            'cost' => Request::input('cost'),
+            'actual' => Request::input('actual'),
+            'project_id' => Request::input('project_id'),
         ]);
 
-        return Redirect::route('agents')->with('success', 'Trade created');
+        return Redirect::route('trades')->with('success', 'Trade created');
     }
 
     public function edit(Trade $trade)
@@ -77,7 +87,15 @@ class TradeController extends Controller
             'trade' => [
                 'id' => $trade->id,
                 'name' => $trade->name,
+                'start' => $trade->start,
+                'end' => $trade->end,
+                'revenue' => $trade->revenue,
+                'cost' => $trade->cost,
+                'actual' => $trade->actual,
+                'project_id' => $trade->project_id,
+                'enable' => $trade->enable,
             ],
+            'projects' => Project::all(),
         ]);
     }
 
@@ -88,10 +106,15 @@ class TradeController extends Controller
         ]);
 
         $trade->name = strtoupper(Request::input('name'));
-
+        $trade->start = Request::input('start');
+        $trade->end = Request::input('end');
+        $trade->revenue = Request::input('revenue');
+        $trade->cost = Request::input('cost');
+        $trade->actual = Request::input('actual');
+        $trade->project_id = Request::input('project_id');
         $trade->save();
 
-        return Redirect::route('agents')->with('success', 'Trade updated.');
+        return Redirect::route('trades')->with('success', 'Trade updated.');
     }
 
     public function destroy(Trade $trade)
