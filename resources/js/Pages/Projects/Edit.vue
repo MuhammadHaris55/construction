@@ -2,7 +2,7 @@
   <app-layout>
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Edit Supplier
+        Edit Project
       </h2>
     </template>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
@@ -43,7 +43,8 @@
             </div>
           </div>
 
-          <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
+          <!-- email -->
+          <!-- <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold">Email :</label>
             <input
               type="email"
@@ -76,7 +77,7 @@
             >
               {{ errors.email }}
             </div>
-          </div>
+          </div> -->
 
           <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold">Address :</label>
@@ -98,10 +99,12 @@
           </div>
 
           <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
-            <label class="my-2 mr-8 text-right w-36 font-bold">STN No :</label>
+            <label class="my-2 mr-8 text-right w-36 font-bold"
+              >Start Date :</label
+            >
             <input
-              type="text"
-              v-model="form.stn_no"
+              type="date"
+              v-model="form.start"
               class="
                 pr-2
                 pb-2
@@ -110,19 +113,19 @@
                 rounded-md
                 placeholder-indigo-300
               "
-              label="stn_no"
-              placeholder="Enter STN No :"
+              label="start"
+              placeholder="Select Start Date :"
             />
-            <div v-if="errors.stn_no">{{ errors.stn_no }}</div>
+            <div v-if="errors.start">{{ errors.start }}</div>
           </div>
 
           <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold"
-              >Phone No :</label
+              >End Date :</label
             >
             <input
-              type="text"
-              v-model="form.phone_no"
+              type="date"
+              v-model="form.end"
               class="
                 pr-2
                 pb-2
@@ -132,12 +135,12 @@
                 placeholder-indigo-300
               "
               label="phone"
-              placeholder="Enter Phone no:"
+              placeholder="Select Start Date:"
             />
-            <div v-if="errors.phone_no">{{ errors.phone_no }}</div>
+            <div v-if="errors.end">{{ errors.end }}</div>
           </div>
 
-          <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
+          <!-- <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold">NTN No :</label>
             <input
               type="text"
@@ -154,7 +157,7 @@
               placeholder="Enter NTN No :"
             />
             <div v-if="errors.ntn_no">{{ errors.ntn_no }}</div>
-          </div>
+          </div> -->
 
           <div
             class="
@@ -171,7 +174,7 @@
               class="border bg-indigo-300 rounded-xl px-4 py-2 ml-4 mt-4"
               type="submit"
             >
-              Update Supplier
+              Update Project
             </button>
           </div>
         </form>
@@ -191,26 +194,26 @@ export default {
 
   props: {
     errors: Object,
-    supplier: Object,
+    project: Object,
   },
 
   data() {
     return {
       form: this.$inertia.form({
-        name: this.supplier.name,
-        email: this.supplier.email,
-        address: this.supplier.address,
-        stn_no: this.supplier.stn_no,
-        phone_no: this.supplier.phone_no,
-        ntn_no: this.supplier.ntn_no,
-        account_id: this.supplier.account_id,
+        name: this.project.name,
+        // email: this.project.email,
+        address: this.project.address,
+        start: this.project.start,
+        end: this.project.end,
+        // ntn_no: this.project.ntn_no,
+        // account_id: this.project.account_id,
       }),
     };
   },
 
   methods: {
     submit() {
-      this.$inertia.put(route("suppliers.update", this.supplier.id), this.form);
+      this.$inertia.put(route("projects.update", this.project.id), this.form);
     },
   },
 };

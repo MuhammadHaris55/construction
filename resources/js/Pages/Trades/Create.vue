@@ -120,9 +120,14 @@
             </div>
           </div>
 
-          <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
+          <div
+            v-if="form.cost == ''"
+            class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap"
+          >
             <label class="my-2 mr-8 text-right w-36 font-bold">Revenue :</label>
+            <!-- :disabled="!form.cost" -->
             <input
+              @change="change_revenue"
               type="number"
               v-model="form.revenue"
               class="
@@ -139,9 +144,15 @@
             <div v-if="errors.revenue">{{ errors.revenue }}</div>
           </div>
 
-          <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
+          <!-- v-if="form.revenue == null" -->
+          <div
+            v-if="form.revenue == ''"
+            class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap"
+          >
             <label class="my-2 mr-8 text-right w-36 font-bold">Cost :</label>
+            <!-- :disabled="!form.revenue" -->
             <input
+              @change="change_cost"
               type="number"
               v-model="form.cost"
               class="
@@ -186,14 +197,17 @@
             <label class="my-2 mr-8 text-right w-36 font-bold"
               >Select Project :</label
             >
+
             <multiselect
-              class="rounded-md border border-black lg:w-1/4"
+              style="display: inline-block; width: 25%"
+              class="rounded-md border border-black"
+              placeholder="Select Project."
               v-model="form.project_id"
-              :options="projects"
-              placeholder="Select Project"
-              label="name"
               track-by="id"
-            ></multiselect>
+              label="name"
+              :options="projects"
+            >
+            </multiselect>
             <div v-if="errors.project_id">
               {{ errors.project_id }}
             </div>
@@ -227,12 +241,12 @@
 <script>
 import AppLayout from "@/Layouts/AppLayout";
 import { useForm } from "@inertiajs/inertia-vue3";
-// import Multiselect from "@suadelabs/vue3-multiselect";
+import Multiselect from "@suadelabs/vue3-multiselect";
 
 export default {
   components: {
     AppLayout,
-    // Multiselect,
+    Multiselect,
   },
 
   props: {
@@ -245,12 +259,20 @@ export default {
       name: null,
       start: null,
       end: null,
-      revenue: null,
-      cost: null,
+      revenue: 0,
+      cost: 0,
       actual: 0,
-      project_id: 1,
+      project_id: props.projects,
     });
     return { form };
+  },
+  methods: {
+    change_revenue() {
+      this.form.cost = 0;
+    },
+    change_cost() {
+      this.form.revenue = 0;
+    },
   },
 };
 </script>
