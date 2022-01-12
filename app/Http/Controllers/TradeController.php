@@ -36,21 +36,21 @@ class TradeController extends Controller
         return Inertia::render('Trades/Index', [
             'trade' => Trade::first(),
             'balances' => $query->paginate(12)
-            ->through(
-                fn ($trade) =>
-                [
-                    'id' => $trade->id,
-                    'name' => $trade->name,
-                    'start' => $trade->start,
-                    'end' => $trade->end,
-                    'revenue' => $trade->revenue,
-                    'cost' => $trade->cost,
-                    'actual' => $trade->actual,
-                    'project_id' => $trade->project_id,
-                    'enable' => $trade->enable,
-                    'delete' => Item::where('trade_id', $trade->id)->first() ? false : true,
-                ],
-            ),
+                ->through(
+                    fn ($trade) =>
+                    [
+                        'id' => $trade->id,
+                        'name' => $trade->name,
+                        'start' => $trade->start,
+                        'end' => $trade->end,
+                        'revenue' => $trade->revenue,
+                        'cost' => $trade->cost,
+                        'actual' => $trade->actual,
+                        'project_id' => $trade->project_id,
+                        'enable' => $trade->enable,
+                        'delete' => Item::where('trade_id', $trade->id)->first() ? false : true,
+                    ],
+                ),
             'filters' => request()->all(['search', 'field', 'direction'])
         ]);
     }
@@ -75,7 +75,7 @@ class TradeController extends Controller
             'revenue' => Request::input('revenue'),
             'cost' => Request::input('cost'),
             'actual' => Request::input('actual'),
-            'project_id' => Request::input('project_id'),
+            'project_id' => Request::input('project_id')[0]['id'],
         ]);
 
         return Redirect::route('trades')->with('success', 'Trade created');

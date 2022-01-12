@@ -44,22 +44,22 @@ class ProjectController extends Controller
         return Inertia::render('Projects/Index', [
             'projects' => Project::first(),
             'balances' => $query->paginate(12)
-            ->through(
-                fn ($proj) =>
-                [
-                    'id' => $proj->id,
-                    'name' => $proj->name,
-                    'address' => $proj->address,
-                    'start' => $proj->start, 
-                    'end' => $proj->end, 
-                    // 'email' => $proj->email,
-                    // 'phone_no' => $proj->phone_no,
-                    // 'stn_no' => $proj->stn_no,
-                    // 'ntn_no' => $proj->ntn_no,
-                    // 'delete' => Account::where('id', $proj->id)->first() ? false : true,
+                ->through(
+                    fn ($proj) =>
+                    [
+                        'id' => $proj->id,
+                        'name' => $proj->name,
+                        'address' => $proj->address,
+                        'start' => $proj->start,
+                        'end' => $proj->end,
+                        // 'email' => $proj->email,
+                        // 'phone_no' => $proj->phone_no,
+                        // 'stn_no' => $proj->stn_no,
+                        // 'ntn_no' => $proj->ntn_no,
+                        // 'delete' => Account::where('id', $proj->id)->first() ? false : true,
 
-                ],
-            ),
+                    ],
+                ),
             'filters' => request()->all(['search', 'field', 'direction'])
         ]);
     }
@@ -82,9 +82,9 @@ class ProjectController extends Controller
             Project::create([
                 'name' => strtoupper($request->name),
                 'address' => $request->address,
-                'start' => $request->start, 
-                'end' => $request->end, 
-                
+                'start' => $request->start,
+                'end' => $request->end,
+
                 // 'email' => $request->email,
                 // 'stn_no' => $request->stn_no,
                 // 'phone_no' => $request->phone_no,
@@ -99,11 +99,12 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         return Inertia::render('Projects/Edit', [
-            'Project' => [
+            'project' => [
                 'id' => $project->id,
                 'name' => $project->name,
-                 'start_date' => $project->start, 
-                'end_date' => $project->end, 
+                'address' => $project->address,
+                'start' => $project->start,
+                'end' => $project->end,
                 // 'email' => $Project->email,
                 // 'address' => $Project->address,
                 // 'stn_no' => $Project->stn_no,
@@ -130,7 +131,7 @@ class ProjectController extends Controller
             $project->name = strtoupper($request->name);
             $project->address = $request->address;
             $project->start = $request->start;
-            $project->start = $request->end;
+            $project->end = $request->end;
             // $project->email = $request->email;
             // $project->stn_no = $request->stn_no;
             // $project->phone_no = $request->phone_no;
