@@ -120,14 +120,12 @@
             </div>
           </div>
 
-          <div
-            v-if="form.cost == ''"
-            class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap"
-          >
+          <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold">Revenue :</label>
-            <!-- :disabled="!form.cost" -->
+
             <input
               @change="change_revenue"
+              :disabled="form.cost > 0"
               type="number"
               v-model="form.revenue"
               class="
@@ -144,15 +142,12 @@
             <div v-if="errors.revenue">{{ errors.revenue }}</div>
           </div>
 
-          <!-- v-if="form.revenue == null" -->
-          <div
-            v-if="form.revenue == ''"
-            class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap"
-          >
+          <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold">Cost :</label>
-            <!-- :disabled="!form.revenue" -->
+
             <input
               @change="change_cost"
+              :disabled="form.revenue > 0"
               type="number"
               v-model="form.cost"
               class="
@@ -257,22 +252,14 @@ export default {
   setup(props) {
     const form = useForm({
       name: null,
-      start: null,
-      end: null,
-      revenue: 0,
-      cost: 0,
+      start: new Date().toISOString().substr(0, 10),
+      end: new Date().toISOString().substr(0, 10),
+      revenue: null,
+      cost: null,
       actual: 0,
-      project_id: props.projects,
+      project_id: null,
     });
     return { form };
-  },
-  methods: {
-    change_revenue() {
-      this.form.cost = 0;
-    },
-    change_cost() {
-      this.form.revenue = 0;
-    },
   },
 };
 </script>
