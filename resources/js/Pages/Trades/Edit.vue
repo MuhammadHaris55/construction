@@ -119,6 +119,7 @@
             <label class="my-2 mr-8 text-right w-36 font-bold">Revenue :</label>
             <input
               type="number"
+              :disabled="form.cost > 0"
               v-model="form.revenue"
               class="
                 pr-2
@@ -138,6 +139,7 @@
             <label class="my-2 mr-8 text-right w-36 font-bold">Cost :</label>
             <input
               type="number"
+              :disabled="form.revenue > 0"
               v-model="form.cost"
               class="
                 pr-2
@@ -153,7 +155,7 @@
             <div v-if="errors.cost">{{ errors.cost }}</div>
           </div>
 
-          <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
+          <!-- <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold"
               >Select Type :</label
             >
@@ -175,7 +177,7 @@
             </select>
 
             <div v-if="errors.actual">{{ errors.actual }}</div>
-          </div>
+          </div> -->
 
           <div class="p-2 mr-2 mb-2 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold"
@@ -221,16 +223,19 @@
 <script>
 import AppLayout from "@/Layouts/AppLayout";
 import Label from "../../Jetstream/Label.vue";
+import Multiselect from "@suadelabs/vue3-multiselect";
 
 export default {
   components: {
     AppLayout,
+    Multiselect,
   },
 
   props: {
     errors: Object,
     trade: Object,
     projects: Array,
+    project: Object,
   },
 
   data() {
@@ -242,7 +247,7 @@ export default {
         revenue: this.trade.revenue,
         cost: this.trade.cost,
         actual: this.trade.actual,
-        project_id: this.trade.project_id,
+        project_id: this.project,
       }),
     };
   },

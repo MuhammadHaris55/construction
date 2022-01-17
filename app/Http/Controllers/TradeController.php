@@ -49,8 +49,7 @@ class TradeController extends Controller
                         'end' => $trade->end,
                         'revenue' => $trade->revenue,
                         'cost' => $trade->cost,
-
-                        'actual' => $trade->actual,
+                        'actual' => $trade->actual == 0 ? 'Revenue' : 'Cost',
                         'project_id' => $trade->project_id,
                         'enable' => $trade->enable,
                         'delete' => Item::where('trade_id', $trade->id)->first() ? false : true,
@@ -120,6 +119,7 @@ class TradeController extends Controller
                 //According to the value we are getting from user ....its a revenue or cost
                 if($request->revenue == null && $request->revenue == ''){
                     $item[$i] = Item::create([
+
                         'start' => $start,
                         'end' => $lastDayofMonth,
                         'cost' => $cost,
@@ -158,23 +158,102 @@ class TradeController extends Controller
                 'enable' => $trade->enable,
             ],
             'projects' => Project::all(),
+            'project' => Project::where('id', $trade->project_id)->first(),
         ]);
     }
 
-    public function update(Trade $trade)
+    public function update(Req $request, Trade $trade)
     {
         Request::validate([
             'name' => ['required', 'max:255'],
         ]);
 
-        $trade->name = strtoupper(Request::input('name'));
-        $trade->start = Request::input('start');
-        $trade->end = Request::input('end');
-        $trade->revenue = Request::input('revenue');
-        $trade->cost = Request::input('cost');
-        $trade->actual = Request::input('actual');
-        $trade->project_id = Request::input('project_id');
-        $trade->save();
+
+
+        DB::transaction(function () use ($request, $trade) {
+
+            //Getting requested and previous amount
+            $pre_amount = $trade->revenue > 0 ? $trade->revenue : $trade->cost;
+            $amount = $request->revenue > 0 ? $request->revenue : $request->cost;
+
+            //To calculate the month between start and end date of trade
+            $pre_start = Carbon::createFromFormat('Y-m-d', $trade->start);
+            $pre_end = Carbon::createFromFormat('Y-m-d', $trade->end);
+            $pre_diff_in_months = $pre_start->diffInMonths($pre_end);
+
+            //To calculate the month between start and end date of trade
+            $start = Carbon::createFromFormat('Y-m-d', $request->start);
+            $end = Carbon::createFromFormat('Y-m-d', $request->end);
+            $diff_in_months = $start->diffInMonths($end);
+
+            /* Checking that there is a difference between the previous number of months and the requested number of months
+              or in previous amount and requested amount (revenue or cost) */
+            if($pre_diff_in_months != $diff_in_months || $pre_amount != $amount)
+            {
+                $item = Item::where('trade_id', $trade->id)->get();
+                dd($item);
+                //According to month ...if months = 0 or months is > 0
+                if($diff_in_months > 0)
+                {
+                $revenue = round($request->revenue / $diff_in_months, 2);
+                $cost = round($request->cost / $diff_in_months, 2);
+                }else {
+                $revenue =  $request->revenue;
+                $cost =  $request->cost;
+                }
+
+                //For loop length according to trade months
+                for($i = 0; $i <= $diff_in_months; $i++)
+                {
+                    //To format the start date
+                    $start = Carbon::parse($start)->format('Y-m-d');
+                    
+                    //To save the last item date according to the trade end date
+                    if($i == $diff_in_months)
+                    {
+                        $lastDayofMonth = Carbon::parse($request->end)->format('Y-m-d');
+                    }else {
+                        $lastDayofMonth = Carbon::parse($start)->endOfMonth()->format('Y-m-d');
+                    }
+                
+                    //According to the value we are getting from user ....its a revenue or cost
+                    if($request->revenue == null && $request->revenue == ''){
+                        $item[$i] = Item::create([
+
+                            'start' => $start,
+                            'end' => $lastDayofMonth,
+                            'cost' => $cost,
+                            'actual' => $request->actual,
+                            'trade_id' => $trade->id,
+                        ]);
+                    }else{
+                        $item[$i] = Item::create([
+                            'start' => $start,
+                            'end' => $lastDayofMonth,
+                            'revenue' => $revenue,
+                            'actual' => $request->actual,
+                            'trade_id' => $trade->id,
+                        ]);
+                    }
+                    //To get the next month by previous month last day
+                    $start = Carbon::parse($lastDayofMonth)->addDays(1)->toDateString();
+                }
+
+            }
+          
+            
+
+            //Updating trade in database
+            $trade->name = strtoupper(Request::input('name'));
+            $trade->start = Request::input('start');
+            $trade->end = Request::input('end');
+            $trade->revenue = Request::input('revenue');
+            $trade->cost = Request::input('cost');
+            $trade->actual = Request::input('actual');
+            $trade->project_id = Request::input('project_id');
+            $trade->save();
+        });
+        
 
         return Redirect::route('trades')->with('success', 'Trade updated.');
     }
