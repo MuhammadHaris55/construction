@@ -63,6 +63,14 @@ Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
     ->middleware('auth');
 //Projects ---------------------------------- ENDS -------------------------------
 
+//Excel Sheets ----------------------------------  STARTS -------------------------------
+
+Route::get('excel', [ProjectController::class, 'excel'])
+    ->name('excel')
+    ->middleware('auth');
+
+
+//Trades ---------------------------------- ENDS -------------------------------
 
 //Trades ---------------------------------- STARTS -------------------------------
 Route::get('trades', [TradeController::class, 'index'])
@@ -124,5 +132,3 @@ Route::delete('items/{item}', [ItemController::class, 'destroy'])
     ->name('items.destroy')
     ->middleware('auth');
 //Items ---------------------------------- ENDS -------------------------------
-
-
