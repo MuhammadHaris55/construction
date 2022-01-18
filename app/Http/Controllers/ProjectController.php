@@ -77,7 +77,7 @@ class ProjectController extends Controller
     {
 
         Request::validate([
-            'name' => ['required', 'max:255'],
+            'name' => ['required', 'unique:projects', 'max:255'],
             'start' => ['required'],
             'end' => ['required'],
             // 'email' => ['required', 'email', 'unique:Projects,email'],
@@ -145,6 +145,34 @@ class ProjectController extends Controller
     {
         $project->delete();
         return Redirect::back()->with('success', 'Project deleted.');
+    }
+
+     //Project Change function
+    public function projch($id)
+    {
+     //   dd($id);
+        $active_proj = Setting::where('user_id', Auth::user()->id)->where('key', 'active_company')->first();
+        if ($active_proj) {
+            $active_proj->value = $id;
+            $active_proj->save();
+        } else {
+            $active_proj = $id;
+        }
+
+        session(['company_id' => $id]);
+
+        // $active_yr = Setting::where('user_id', Auth::user()->id)->where('key', 'active_year')->first();
+        // // dd($active_yr);
+        // if ($active_yr) {
+        //     $active_yr->value = Year::where('company_id', $id)->latest()->first()->id;
+        //     $active_yr->save();
+        //     session(['year_id' => $active_yr->value]);
+        // } else {
+        //     $active_yr = Year::where('company_id', $id)->latest()->first()->id;
+        //     session(['year_id' => $active_yr]);
+        // }
+
+        return back()->withInput();
     }
 
     public function excel()

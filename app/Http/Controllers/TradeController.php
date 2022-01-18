@@ -168,13 +168,14 @@ class TradeController extends Controller
             'name' => ['required', 'max:255'],
         ]);
 
-
-
         DB::transaction(function () use ($request, $trade) {
 
             //Getting requested and previous amount
             $pre_amount = $trade->revenue > 0 ? $trade->revenue : $trade->cost;
             $amount = $request->revenue > 0 ? $request->revenue : $request->cost;
+            //Getting requested and previous amount
+            $pre_amount_type = $trade->revenue > 0 ? 'revenue' : 'cost';
+            $amount_type = $request->revenue > 0 ? 'revenue' : 'cost';
 
             //To calculate the month between start and end date of trade
             $pre_start = Carbon::createFromFormat('Y-m-d', $trade->start);
@@ -188,10 +189,15 @@ class TradeController extends Controller
 
             /* Checking that there is a difference between the previous number of months and the requested number of months
               or in previous amount and requested amount (revenue or cost) */
-            if($pre_diff_in_months != $diff_in_months || $pre_amount != $amount)
+            if($pre_diff_in_months != $diff_in_months || $pre_amount != $amount || $pre_amount_type != $amount_type)
             {
-                $item = Item::where('trade_id', $trade->id)->get();
-                dd($item);
+                //Deleting previous items because of the difference in date and amount
+                $items = Item::where('trade_id', $trade->id)->get();
+                foreach($items as $item)
+                {
+                    $item->delete();
+                }
+
                 //According to month ...if months = 0 or months is > 0
                 if($diff_in_months > 0)
                 {
@@ -202,7 +208,7 @@ class TradeController extends Controller
                 $cost =  $request->cost;
                 }
 
-                //For loop length according to trade months
+                //Creating items by for loop according to the length of months of trade
                 for($i = 0; $i <= $diff_in_months; $i++)
                 {
                     //To format the start date
@@ -215,7 +221,6 @@ class TradeController extends Controller
                     }else {
                         $lastDayofMonth = Carbon::parse($start)->endOfMonth()->format('Y-m-d');
                     }
-                
                     //According to the value we are getting from user ....its a revenue or cost
                     if($request->revenue == null && $request->revenue == ''){
                         $item[$i] = Item::create([
@@ -226,7 +231,7 @@ class TradeController extends Controller
                             'actual' => $request->actual,
                             'trade_id' => $trade->id,
                         ]);
-                    }else{
+                    } else{
                         $item[$i] = Item::create([
                             'start' => $start,
                             'end' => $lastDayofMonth,
@@ -239,22 +244,34 @@ class TradeController extends Controller
                     $start = Carbon::parse($lastDayofMonth)->addDays(1)->toDateString();
                 }
 
+                //Updating trade in database
+                $trade->name = strtoupper($request->name);
+                $trade->start = $request->start;
+                $trade->end = $request->end;
+                $trade->revenue = $request->revenue;
+                $trade->cost = $request->cost;
+                // $trade->actual = $request->actual;
+                $trade->project_id = $request->project_id['id'];
+                $trade->save();
             }
-          
-            
-
-            //Updating trade in database
-            $trade->name = strtoupper(Request::input('name'));
-            $trade->start = Request::input('start');
-            $trade->end = Request::input('end');
-            $trade->revenue = Request::input('revenue');
-            $trade->cost = Request::input('cost');
-            $trade->actual = Request::input('actual');
-            $trade->project_id = Request::input('project_id');
-            $trade->save();
+            // elseif($pre_amount_type != $amount_type)
+            // {
+            //     //Updating previous items because of the change in amount type (revenue / cost)
+            //     $items = Item::where('trade_id', $trade->id)->get();
+            //     foreach($items as $item)
+            //     {
+            //         $revenORcost = $
+            //         $item->revenue = ;
+            //         $item->delete();
+            //     }
+            // }
+            else {
+                //Updating trade in database
+                $trade->name = strtoupper(Request::input('name'));
+                $trade->project_id = Request::input('project_id')['id'];
+                $trade->save();
+            }
         });
-        
-
         return Redirect::route('trades')->with('success', 'Trade updated.');
     }
 

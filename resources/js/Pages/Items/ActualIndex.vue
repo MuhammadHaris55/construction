@@ -2,7 +2,7 @@
   <app-layout>
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Estimated Trade Items
+        Actual Trade Items
       </h2>
     </template>
     <div
@@ -138,10 +138,10 @@
                 {{ item.end }}
               </td>
               <td class="py-1 px-4 border">
-                {{ item.revenue ? item.revenue : 0 }}
+                {{ item.revenue }}
               </td>
               <td class="py-1 px-4 border">
-                {{ item.cost ? item.cost : 0 }}
+                {{ item.cost }}
               </td>
               <!-- <td class="py-1 px-4 border">
                 {{ item.actual }}
@@ -151,18 +151,18 @@
               </td>
 
               <td class="py-1 px-4 border text-center" style="width: 25%">
-                <!-- <button
+                <button
                   class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"
                   @click="edit(item.id)"
                 >
                   <span>Edit</span>
-                </button> -->
-                <button
+                </button>
+                <!-- <button
                   class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"
                   @click="actual(item.id)"
                 >
                   <span>Actual</span>
-                </button>
+                </button> -->
                 <button
                   class="border bg-red-500 rounded-xl px-4 py-1 m-1"
                   @click="destroy(item.id)"

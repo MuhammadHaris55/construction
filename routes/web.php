@@ -61,6 +61,9 @@ Route::put('projects/{project}', [ProjectController::class, 'update'])
 Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
     ->name('projects.destroy')
     ->middleware('auth');
+
+Route::get('projects/projch/{id}', [ProjectController::class, 'projch'])
+    ->name('projects.coch');
 //Projects ---------------------------------- ENDS -------------------------------
 
 //Excel Sheets ----------------------------------  STARTS -------------------------------
@@ -108,6 +111,10 @@ Route::get('items', [ItemController::class, 'index'])
     ->name('items')
     ->middleware('auth');
 
+Route::get('actual_items', [ItemController::class, 'actual_index'])
+    ->name('actual_items')
+    ->middleware('auth');
+
 Route::get('items/create', [ItemController::class, 'create'])
     ->name('items.create')
     ->middleware('auth');
@@ -122,6 +129,10 @@ Route::post('items', [ItemController::class, 'store'])
 
 Route::get('items/{item}/edit', [ItemController::class, 'edit'])
     ->name('items.edit')
+    ->middleware('auth');
+
+Route::get('items/{item}/actual', [ItemController::class, 'actual_create'])
+    ->name('items.actual.create')
     ->middleware('auth');
 
 Route::put('items/{item}', [ItemController::class, 'update'])

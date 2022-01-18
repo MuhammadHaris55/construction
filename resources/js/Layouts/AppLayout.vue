@@ -36,7 +36,13 @@
                   :href="route('items')"
                   :active="route().current('items')"
                 >
-                  Items
+                  Estimated Items
+                </jet-nav-link>
+                <jet-nav-link
+                  :href="route('actual_items')"
+                  :active="route().current('actual_items')"
+                >
+                  Actual Items
                 </jet-nav-link>
               </div>
             </div>
