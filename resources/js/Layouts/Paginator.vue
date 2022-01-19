@@ -48,12 +48,10 @@
           leading-5
           rounded-md
           hover:text-gray-500
-          focus:outline-none
-          focus:ring
+          focus:outline-none focus:ring
           ring-gray-300
           focus:border-blue-300
-          active:bg-gray-100
-          active:text-gray-700
+          active:bg-gray-100 active:text-gray-700
           transition
           ease-in-out
           duration-150
@@ -86,12 +84,10 @@
           leading-5
           rounded-md
           hover:text-gray-500
-          focus:outline-none
-          focus:ring
+          focus:outline-none focus:ring
           ring-gray-300
           focus:border-blue-300
-          active:bg-gray-100
-          active:text-gray-700
+          active:bg-gray-100 active:text-gray-700
           transition
           ease-in-out
           duration-150
@@ -196,13 +192,10 @@
               rounded-l-md
               leading-5
               hover:text-gray-400
-              focus:z-10
-              focus:outline-none
-              focus:ring
+              focus:z-10 focus:outline-none focus:ring
               ring-gray-300
               focus:border-blue-300
-              active:bg-gray-100
-              active:text-gray-500
+              active:bg-gray-100 active:text-gray-500
               transition
               ease-in-out
               duration-150
@@ -240,13 +233,10 @@
                   border border-gray-300
                   leading-5
                   hover:text-gray-500
-                  focus:z-10
-                  focus:outline-none
-                  focus:ring
+                  focus:z-10 focus:outline-none focus:ring
                   ring-gray-300
                   focus:border-blue-300
-                  active:bg-gray-100
-                  active:text-gray-700
+                  active:bg-gray-100 active:text-gray-700
                   transition
                   ease-in-out
                   duration-150
@@ -295,13 +285,10 @@
               rounded-r-md
               leading-5
               hover:text-gray-400
-              focus:z-10
-              focus:outline-none
-              focus:ring
+              focus:z-10 focus:outline-none focus:ring
               ring-gray-300
               focus:border-blue-300
-              active:bg-gray-100
-              active:text-gray-500
+              active:bg-gray-100 active:text-gray-500
               transition
               ease-in-out
               duration-150

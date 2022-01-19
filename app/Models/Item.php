@@ -10,7 +10,7 @@ class Item extends Model
     use HasFactory;
 
     protected $fillable = [
-        'start', 'end', 'revenue', 'cost', 'actual', 'trade_id', 'enabled'
+        'start', 'end', 'revenue', 'cost', 'actual', 'trade_id', 'project_id', 'enabled'
     ];
 
     public function trade()

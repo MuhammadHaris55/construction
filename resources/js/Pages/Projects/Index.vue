@@ -16,7 +16,7 @@
         v-if="projects"
         v-model="params.search"
         aria-label="Search"
-        placeholder="Search..."
+        placeholder="Search by name..."
         class="pr-2 pb-2 w-full lg:w-1/4 ml-6 rounded-md placeholder-indigo-300"
       />
       <!-- <select
@@ -148,12 +148,12 @@
                 </button>
               </td>
             </tr>
-            <tr v-if="balances.data.length === 0">
+            <!-- <tr v-if="balances.data.length === 0">
               <td class="border-t px-6 py-4" colspan="4">No Record found.</td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
-        <paginator class="mt-6" :balances="balances" />
+        <!-- <paginator class="mt-6" :balances="balances" /> -->
       </div>
     </div>
   </app-layout>

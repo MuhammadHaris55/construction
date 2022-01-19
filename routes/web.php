@@ -63,7 +63,7 @@ Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
     ->middleware('auth');
 
 Route::get('projects/projch/{id}', [ProjectController::class, 'projch'])
-    ->name('projects.coch');
+    ->name('projects.projch');
 //Projects ---------------------------------- ENDS -------------------------------
 
 //Excel Sheets ----------------------------------  STARTS -------------------------------

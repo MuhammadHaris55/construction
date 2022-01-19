@@ -3,12 +3,18 @@
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">Trades</h2>
     </template>
-    <!-- <div
+    <div
       v-if="$page.props.flash.success"
       class="bg-green-600 text-white text-center"
     >
       {{ $page.props.flash.success }}
-    </div> -->
+    </div>
+    <div
+      v-if="$page.props.flash.warning"
+      class="bg-yellow-600 text-white text-center"
+    >
+      {{ $page.props.flash.warning }}
+    </div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
       <jet-button @click="create" class="mt-4 ml-2">Create</jet-button>
       <input
@@ -16,21 +22,21 @@
         v-if="trade"
         v-model="params.search"
         aria-label="Search"
-        placeholder="Search..."
+        placeholder="Search by name..."
         class="pr-2 pb-2 w-full lg:w-1/4 ml-6 rounded-md placeholder-indigo-300"
       />
-      <!-- <select
-        v-model="co_id"
-        v-if="companies[0]"
+      <select
+        v-model="proj_id"
+        v-if="projects[0]"
         class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-2"
-        label="company"
-        placeholder="Select Company"
-        @change="coch"
+        label="project"
+        placeholder="Select Project"
+        @change="projch"
       >
-        <option v-for="type in companies" :key="type.id" :value="type.id">
+        <option v-for="type in projects" :key="type.id" :value="type.id">
           {{ type.name }}
         </option>
-      </select> -->
+      </select>
       <div class="">
         <table class="w-full shadow-lg border mt-4 ml-2 rounded-xl">
           <thead>
@@ -168,12 +174,12 @@
                 </button>
               </td>
             </tr>
-            <tr v-if="balances.data.length === 0">
+            <!-- <tr v-if="balances.data.length === 0">
               <td class="border-t px-6 py-4" colspan="4">No Record found.</td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
-        <paginator class="mt-6" :balances="balances" />
+        <!-- <paginator class="mt-6" :balances="balances" /> -->
       </div>
     </div>
   </app-layout>
@@ -199,11 +205,12 @@ export default {
     balances: Object,
     filters: Object,
     trade: Object,
+    projects: Object,
   },
 
   data() {
     return {
-      //   co_id: this.$page.props.co_id,
+      proj_id: this.$page.props.proj_id,
 
       params: {
         search: this.filters.search,
@@ -226,9 +233,9 @@ export default {
       this.$inertia.delete(route("trades.destroy", id));
     },
 
-    // coch() {
-    //   this.$inertia.get(route("companies.coch", this.co_id));
-    // },
+    projch() {
+      this.$inertia.get(route("projects.projch", this.proj_id));
+    },
 
     sort(field) {
       this.params.field = field;

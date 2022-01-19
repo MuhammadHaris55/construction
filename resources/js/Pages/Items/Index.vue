@@ -11,15 +11,33 @@
     >
       {{ $page.props.flash.success }}
     </div>
+    <div
+      v-if="$page.props.flash.warning"
+      class="bg-yellow-600 text-white text-center"
+    >
+      {{ $page.props.flash.warning }}
+    </div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
-      <jet-button @click="create" class="mt-4 ml-2">Create</jet-button>
+      <!-- <jet-button @click="create" class="mt-4 ml-2">Create</jet-button> -->
       <input
         type="search"
         v-model="params.search"
         aria-label="Search"
-        placeholder="Search..."
-        class="pr-2 pb-2 w-full lg:w-1/4 ml-6 rounded-md placeholder-indigo-300"
+        placeholder="Search by start date..."
+        class="pr-2 pb-2 w-full lg:w-1/4 ml-2 rounded-md placeholder-indigo-300"
       />
+      <select
+        v-model="proj_id"
+        v-if="projects[0]"
+        class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-1"
+        label="project"
+        placeholder="Select Project"
+        @change="projch"
+      >
+        <option v-for="type in projects" :key="type.id" :value="type.id">
+          {{ type.name }}
+        </option>
+      </select>
       <!-- <select
         v-model="co_id"
         v-if="companies[0]"
@@ -129,7 +147,18 @@
           <tbody>
             <tr v-for="item in balances.data" :key="item.id">
               <!-- <td class="py-1 px-4 border">
-                {{ item.name }}
+                {{ item<select
+        v-model="proj_id"
+        v-if="projects[0]"
+        class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-2"
+        label="project"
+        placeholder="Select Project"
+        @change="projch"
+      >
+        <option v-for="type in projects" :key="type.id" :value="type.id">
+          {{ type.name }}
+        </option>
+      </select>.name }}
               </td> -->
               <td class="py-1 px-4 border">
                 {{ item.start }}
@@ -172,12 +201,12 @@
                 </button>
               </td>
             </tr>
-            <tr v-if="balances.data.length === 0">
+            <!-- <tr v-if="balances.data.length === 0">
               <td class="border-t px-6 py-4" colspan="4">No Record found.</td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
-        <pagination class="mt-10" :links="balances.links" />
+        <!-- <pagination class="mt-10" :links="balances.links" /> -->
         <!-- <pagination class="mt-6" :balances="balances" /> -->
       </div>
     </div>
@@ -212,6 +241,7 @@ export default {
   data() {
     return {
       //   co_id: this.$page.props.co_id,
+      proj_id: this.$page.props.proj_id,
       params: {
         search: this.filters.search,
         field: this.filters.field,
@@ -237,9 +267,9 @@ export default {
       this.$inertia.delete(route("items.destroy", id));
     },
 
-    // coch() {
-    //   this.$inertia.get(route("companies.coch", this.co_id));
-    // },
+    projch() {
+      this.$inertia.get(route("projects.projch", this.proj_id));
+    },
 
     sort(field) {
       this.params.field = field;

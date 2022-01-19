@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Redirect;
 use App\Models\Project;
 use App\Models\Trade;
 use App\Models\Item;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Auth;
 
 
 class ProjectController extends Controller
@@ -89,6 +91,13 @@ class ProjectController extends Controller
                 'start' => $request->start,
                 'end' => $request->end,
             ]);
+
+            Setting::create([
+                'key' => 'active_project',
+                'value' => $project->id,
+                'user_id' => Auth::user()->id,
+            ]);
+
             session(['project_id' => $project->id]);
         });
         return Redirect::route('projects')->with('success', 'Project created');
@@ -151,7 +160,7 @@ class ProjectController extends Controller
     public function projch($id)
     {
      //   dd($id);
-        $active_proj = Setting::where('user_id', Auth::user()->id)->where('key', 'active_company')->first();
+        $active_proj = Setting::where('user_id', Auth::user()->id)->where('key', 'active_project')->first();
         if ($active_proj) {
             $active_proj->value = $id;
             $active_proj->save();
@@ -159,7 +168,7 @@ class ProjectController extends Controller
             $active_proj = $id;
         }
 
-        session(['company_id' => $id]);
+        session(['project_id' => $id]);
 
         // $active_yr = Setting::where('user_id', Auth::user()->id)->where('key', 'active_year')->first();
         // // dd($active_yr);

@@ -37,9 +37,12 @@ class TradeController extends Controller
             );
         }
 
+        // $query->where('project_id', session('project_id'));
+
         return Inertia::render('Trades/Index', [
             'trade' => Trade::first(),
-            'balances' => $query->paginate(12)
+            'projects' => Project::all(),
+            'balances' => $query->where('project_id', session('project_id'))->paginate()
                 ->through(
                     fn ($trade) =>
                     [
@@ -63,6 +66,7 @@ class TradeController extends Controller
     {
         return Inertia::render('Trades/Create', [
             'projects' => Project::all(),
+            'projchange' => Project::where('id', session('project_id'))->get(),
         ]);
     }
 
@@ -72,8 +76,7 @@ class TradeController extends Controller
             'name' => ['required', 'max:255'],
             'start' => ['required'],
             'end' => ['required'],
-            'project_id' => ['required'],
-
+            // 'project_id' => ['required'],
         ]);
         DB::transaction(function () use ($request) {
             //Creating trade in database
@@ -84,7 +87,8 @@ class TradeController extends Controller
                 'revenue' => Request::input('revenue'),
                 'cost' => Request::input('cost'),
                 'actual' => Request::input('actual'),
-                'project_id' => Request::input('project_id')['id'],
+                // 'project_id' => Request::input('project_id')['id'],
+                'project_id' => session('project_id'),
             ]);
 
             //To calculate the month between start and end date of trade
@@ -125,6 +129,7 @@ class TradeController extends Controller
                         'cost' => $cost,
                         'actual' => $request->actual,
                         'trade_id' => $trade->id,
+                        'project_id' => session('project_id'),
                     ]);
                 }else{
                     $item[$i] = Item::create([
@@ -133,6 +138,7 @@ class TradeController extends Controller
                         'revenue' => $revenue,
                         'actual' => $request->actual,
                         'trade_id' => $trade->id,
+                        'project_id' => session('project_id'),
                     ]);
                 }
                 //To get the next month by previous month last day

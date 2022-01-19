@@ -108,6 +108,7 @@
             <input
               type="date"
               v-model="form.start"
+              :max="form.end"
               class="
                 pr-2
                 pb-2
@@ -129,6 +130,7 @@
             <input
               type="date"
               v-model="form.end"
+              :min="form.start"
               class="
                 pr-2
                 pb-2

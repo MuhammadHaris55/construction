@@ -4,7 +4,7 @@
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
         Create Trade
 
-        <!-- <div class="flex-1 inline-block float-right">
+        <div class="flex-1 inline-block float-right">
           <multiselect
             class="rounded-md border border-black"
             placeholder="Select Project."
@@ -15,7 +15,7 @@
             @update:model-value="projch"
           >
           </multiselect>
-        </div> -->
+        </div>
       </h2>
     </template>
     <div
@@ -61,7 +61,7 @@
             </div>
           </div>
 
-          <div class="p-2 mr-2 mb-2 ml-6 flex flex-wrap">
+          <!-- <div class="p-2 mr-2 mb-2 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold"
               >Select Project :</label
             >
@@ -79,7 +79,7 @@
             <div v-if="errors.project_id">
               {{ errors.project_id }}
             </div>
-          </div>
+          </div> -->
 
           <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold"
