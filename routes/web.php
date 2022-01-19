@@ -68,9 +68,14 @@ Route::get('projects/projch/{id}', [ProjectController::class, 'projch'])
 
 //Excel Sheets ----------------------------------  STARTS -------------------------------
 
-Route::get('excel', [ProjectController::class, 'excel'])
-    ->name('excel')
+// Route::get('excel', [ProjectController::class, 'excel'])
+//     ->name('excel')
+//     ->middleware('auth');
+Route::get('excel/{proj_id}', [ProjectController::class, 'excel'])
+    ->name('projects.excel')
     ->middleware('auth');
+
+    
 
 
 //Trades ---------------------------------- ENDS -------------------------------

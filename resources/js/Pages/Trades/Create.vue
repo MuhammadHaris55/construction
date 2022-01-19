@@ -85,7 +85,7 @@
             <label class="my-2 mr-8 text-right w-36 font-bold"
               >Start Date :</label
             >
-            <!-- :min="form.project_id['start']" -->
+            <!-- :min="this.proj_id['start']" -->
             <input
               type="date"
               v-model="form.start"

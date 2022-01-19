@@ -139,6 +139,20 @@
                 >
                   <span>Edit</span>
                 </button>
+                <div
+                  class="
+                    border
+                    inline-block
+                    bg-indigo-300
+                    shadow-md
+                    rounded-xl
+                    px-4
+                    py-1
+                    m-1
+                  "
+                >
+                  <a v-bind:href="'excel/' + item.id">Generate Report</a>
+                </div>
                 <button
                   class="border bg-red-500 rounded-xl px-4 py-1 m-1"
                   @click="destroy(item.id)"
@@ -202,6 +216,13 @@ export default {
     edit(id) {
       this.$inertia.get(route("projects.edit", id));
     },
+    // report(id) {
+    //   this.$inertia.get(route("projects.excel", id));
+    // },
+
+    // report(id) {
+    //   this.$inertia.get(route("projects.excel", id));
+    // },
 
     destroy(id) {
       this.$inertia.delete(route("projects.destroy", id));
