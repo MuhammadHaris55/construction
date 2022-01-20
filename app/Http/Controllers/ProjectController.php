@@ -159,15 +159,11 @@ class ProjectController extends Controller
      //Project Change function
     public function projch($id)
     {
-     //   dd($id);
+       
         $active_proj = Setting::where('user_id', Auth::user()->id)->where('key', 'active_project')->first();
-        if ($active_proj) {
-            $active_proj->value = $id;
-            $active_proj->save();
-        } else {
-            $active_proj = $id;
-        }
-
+        $active_proj->value = $id;
+        $active_proj->save();
+        
         session(['project_id' => $id]);
 
         // $active_yr = Setting::where('user_id', Auth::user()->id)->where('key', 'active_year')->first();

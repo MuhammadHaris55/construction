@@ -42,7 +42,9 @@ class TradeController extends Controller
         return Inertia::render('Trades/Index', [
             'trade' => Trade::first(),
             'projects' => Project::all(),
-            'balances' => $query->where('project_id', session('project_id'))->paginate()
+            'projchange' => Project::where('id', session('project_id'))->first(),
+            'balances' => $query->where('project_id', session('project_id'))
+            ->paginate()
                 ->through(
                     fn ($trade) =>
                     [
@@ -64,10 +66,16 @@ class TradeController extends Controller
 
     public function create()
     {
-        return Inertia::render('Trades/Create', [
-            'projects' => Project::all(),
-            'projchange' => Project::where('id', session('project_id'))->get(),
-        ]);
+        if(session('project_id'))
+        {
+            return Inertia::render('Trades/Create', [
+                'projects' => Project::all(),
+                'projchange' => Project::where('id', session('project_id'))->first(),
+            ]);
+        }else {
+            return redirect()->route('projects')->with('warning', 'Create Project First');
+        }
+        
     }
 
     public function store(Req $request)
@@ -257,7 +265,7 @@ class TradeController extends Controller
                 $trade->revenue = $request->revenue;
                 $trade->cost = $request->cost;
                 // $trade->actual = $request->actual;
-                $trade->project_id = $request->project_id['id'];
+                $trade->project_id = session('project_id');
                 $trade->save();
             }
             // elseif($pre_amount_type != $amount_type)
@@ -274,7 +282,7 @@ class TradeController extends Controller
             else {
                 //Updating trade in database
                 $trade->name = strtoupper(Request::input('name'));
-                $trade->project_id = Request::input('project_id')['id'];
+                $trade->project_id = session('project_id');
                 $trade->save();
             }
         });
