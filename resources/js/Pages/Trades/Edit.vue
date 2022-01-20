@@ -183,23 +183,6 @@
             <div v-if="errors.actual">{{ errors.actual }}</div>
           </div> -->
 
-          <div class="p-2 mr-2 mb-2 ml-6 flex flex-wrap">
-            <label class="my-2 mr-8 text-right w-36 font-bold"
-              >Select Project :</label
-            >
-            <multiselect
-              class="rounded-md border border-black lg:w-1/4"
-              v-model="form.project_id"
-              :options="projects"
-              placeholder="Select Project"
-              label="name"
-              track-by="id"
-            ></multiselect>
-            <div v-if="errors.project_id">
-              {{ errors.project_id }}
-            </div>
-          </div>
-
           <div
             class="
               px-4

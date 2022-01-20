@@ -3,6 +3,21 @@
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
         Actual Trade Items
+        <div
+          style="display: inline-block; min-width: 25%"
+          class="flex-1 inline-block float-right"
+        >
+          <multiselect
+            class="rounded-md border border-black"
+            placeholder="Select Project."
+            v-model="proj_id"
+            track-by="id"
+            label="name"
+            :options="options"
+            @update:model-value="projch"
+          >
+          </multiselect>
+        </div>
       </h2>
     </template>
     <div
@@ -26,31 +41,7 @@
         placeholder="Search by start date..."
         class="pr-2 pb-2 w-full lg:w-1/4 ml-2 rounded-md placeholder-indigo-300"
       />
-      <select
-        v-model="proj_id"
-        v-if="projects[0]"
-        class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-1"
-        label="project"
-        placeholder="Select Project"
-        @change="projch"
-      >
-        <option v-for="type in projects" :key="type.id" :value="type.id">
-          {{ type.name }}
-        </option>
-      </select>
-      <!-- ml-2 -->
-      <!-- <select
-        v-model="co_id"
-        v-if="companies[0]"
-        class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-2"
-        label="company"
-        placeholder="Select Company"
-        @change="coch"
-      >
-        <option v-for="type in companies" :key="type.id" :value="type.id">
-          {{ type.name }}
-        </option>
-      </select> -->
+
       <div class="">
         <table class="w-full shadow-lg border mt-4 ml-2 rounded-xl">
           <thead>
@@ -136,24 +127,29 @@
                   </svg>
                 </span>
               </th> -->
+              <th class="py-2 px-4 border">Trade Name</th>
               <th class="py-2 px-4 border">Start Date</th>
               <th class="py-2 px-4 border">End Date</th>
               <th class="py-2 px-4 border">Revenue</th>
               <th class="py-2 px-4 border">Cost</th>
               <!-- <th class="py-2 px-4 border">Actual / Estimate</th> -->
-              <th class="py-2 px-4 border">Trade Name</th>
               <th class="py-2 px-4 border">Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in balances.data" :key="item.id">
+            <!-- <tr v-for="item in balances.data" :key="item.id"> -->
+            <tr v-for="item in balance" :key="item.id">
               <!-- <td class="py-1 px-4 border">
                 {{ item.name }}
               </td> -->
               <td class="py-1 px-4 border">
+                <!-- {{ item.trade_id }} -->
+                {{ item.trade.name }}
+              </td>
+              <td class="py-1 px-4 border text-center">
                 {{ item.start }}
               </td>
-              <td class="py-1 px-4 border">
+              <td class="py-1 px-4 border text-center">
                 {{ item.end }}
               </td>
               <td class="py-1 px-4 border">
@@ -165,9 +161,6 @@
               <!-- <td class="py-1 px-4 border">
                 {{ item.actual }}
               </td> -->
-              <td class="py-1 px-4 border">
-                {{ item.trade_id }}
-              </td>
 
               <td class="py-1 px-4 border text-center" style="width: 25%">
                 <!-- <button
@@ -210,6 +203,7 @@ import Pagination from "@/Jetstream/Pagination";
 // import Pagination from "@/Jetstream/Pagination";
 import { pickBy } from "lodash";
 import { throttle } from "lodash";
+import Multiselect from "@suadelabs/vue3-multiselect";
 
 export default {
   components: {
@@ -218,19 +212,25 @@ export default {
     Pagination,
     throttle,
     pickBy,
+    Multiselect,
   },
 
   props: {
     balances: Array,
+    balance: Object,
     filters: Object,
     item: Object,
     projects: Object,
+    projchange: Object,
   },
 
   data() {
     return {
       //   co_id: this.$page.props.co_id,
-      proj_id: this.$page.props.proj_id,
+      // proj_id: this.$page.props.proj_id,
+      options: this.projects,
+      proj_id: this.projchange,
+
       params: {
         search: this.filters.search,
         field: this.filters.field,

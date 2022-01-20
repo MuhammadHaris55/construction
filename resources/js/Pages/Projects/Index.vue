@@ -3,12 +3,18 @@
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">Project</h2>
     </template>
-    <!-- <div
+    <div
       v-if="$page.props.flash.success"
       class="bg-green-600 text-white text-center"
     >
       {{ $page.props.flash.success }}
-    </div> -->
+    </div>
+    <div
+      v-if="$page.props.flash.warning"
+      class="bg-yellow-600 text-white text-center"
+    >
+      {{ $page.props.flash.warning }}
+    </div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
       <jet-button @click="create" class="mt-4 ml-2">Create</jet-button>
       <input
@@ -130,8 +136,8 @@
             <tr v-for="item in balances.data" :key="item.id">
               <td class="py-1 px-4 border">{{ item.name }}</td>
               <td class="py-1 px-4 border">{{ item.address }}</td>
-              <td class="py-1 px-4 border">{{ item.start }}</td>
-              <td class="py-1 px-4 border">{{ item.end }}</td>
+              <td class="py-1 px-4 border text-center">{{ item.start }}</td>
+              <td class="py-1 px-4 border text-center">{{ item.end }}</td>
               <td class="py-1 px-4 border text-center">
                 <button
                   class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"

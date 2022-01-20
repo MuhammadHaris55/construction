@@ -1,7 +1,24 @@
 <template>
   <app-layout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">Trades</h2>
+      <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        Trades
+        <div
+          style="display: inline-block; min-width: 25%"
+          class="flex-1 inline-block float-right"
+        >
+          <multiselect
+            class="rounded-md border border-black"
+            placeholder="Select Project."
+            v-model="proj_id"
+            track-by="id"
+            label="name"
+            :options="options"
+            @update:model-value="projch"
+          >
+          </multiselect>
+        </div>
+      </h2>
     </template>
     <div
       v-if="$page.props.flash.success"
@@ -25,7 +42,7 @@
         placeholder="Search by name..."
         class="pr-2 pb-2 w-full lg:w-1/4 ml-6 rounded-md placeholder-indigo-300"
       />
-      <select
+      <!-- <select
         v-model="proj_id"
         v-if="projects[0]"
         class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-2"
@@ -36,7 +53,7 @@
         <option v-for="type in projects" :key="type.id" :value="type.id">
           {{ type.name }}
         </option>
-      </select>
+      </select> -->
       <div class="">
         <table class="w-full shadow-lg border mt-4 ml-2 rounded-xl">
           <thead>
@@ -130,7 +147,7 @@
               <th class="py-2 px-4 border">Revenue</th>
               <th class="py-2 px-4 border">Cost</th>
               <th class="py-2 px-4 border">Actual</th>
-              <th class="py-2 px-4 border">Project</th>
+              <!-- <th class="py-2 px-4 border">Project</th> -->
               <th class="py-2 px-4 border">Action</th>
             </tr>
           </thead>
@@ -139,10 +156,10 @@
               <td class="py-1 px-4 border">
                 {{ item.name }}
               </td>
-              <td class="py-1 px-4 border">
+              <td class="py-1 px-4 border text-center">
                 {{ item.start }}
               </td>
-              <td class="py-1 px-4 border">
+              <td class="py-1 px-4 border text-center">
                 {{ item.end }}
               </td>
               <td class="py-1 px-4 border">
@@ -154,9 +171,9 @@
               <td class="py-1 px-4 border">
                 {{ item.actual }}
               </td>
-              <td class="py-1 px-4 border">
+              <!-- <td class="py-1 px-4 border">
                 {{ item.project_id }}
-              </td>
+              </td> -->
 
               <td class="py-1 px-4 border text-center" style="width: 25%">
                 <button
@@ -188,17 +205,19 @@
 <script>
 import AppLayout from "@/Layouts/AppLayout";
 import JetButton from "@/Jetstream/Button";
-import Paginator from "@/Layouts/Paginator";
+// import Paginator from "@/Layouts/Paginator";
 import { pickBy } from "lodash";
 import { throttle } from "lodash";
+import Multiselect from "@suadelabs/vue3-multiselect";
 
 export default {
   components: {
     AppLayout,
     JetButton,
-    Paginator,
+    // Paginator,
     throttle,
     pickBy,
+    Multiselect,
   },
 
   props: {
@@ -206,11 +225,14 @@ export default {
     filters: Object,
     trade: Object,
     projects: Object,
+    projchange: Object,
   },
 
   data() {
     return {
-      proj_id: this.$page.props.proj_id,
+      // proj_id: this.$page.props.proj_id,
+      options: this.projects,
+      proj_id: this.projchange,
 
       params: {
         search: this.filters.search,
