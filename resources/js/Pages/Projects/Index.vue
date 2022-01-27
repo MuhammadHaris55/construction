@@ -168,12 +168,12 @@
                 </button>
               </td>
             </tr>
-            <!-- <tr v-if="balances.data.length === 0">
+            <tr v-if="balances.data.length === 0">
               <td class="border-t px-6 py-4" colspan="4">No Record found.</td>
-            </tr> -->
+            </tr>
           </tbody>
         </table>
-        <!-- <paginator class="mt-6" :balances="balances" /> -->
+        <paginator class="mt-6" :balances="balances" />
       </div>
     </div>
   </app-layout>
