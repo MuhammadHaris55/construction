@@ -33,8 +33,6 @@ class ProjectController extends Controller
 
         //Project data
         $query = Project::query();
-
-
         //Searching request
         if (request('search')) {
             $query->where('name', 'LIKE', '%' . request('search') . '%');
@@ -49,7 +47,7 @@ class ProjectController extends Controller
 
         return Inertia::render('Projects/Index', [
             'projects' => Project::first(),
-            'balances' => $query->paginate(12)
+            'balances' => $query->paginate(1)
                 ->through(
                     fn ($proj) =>
                     [
@@ -156,14 +154,14 @@ class ProjectController extends Controller
         return Redirect::back()->with('success', 'Project deleted.');
     }
 
-     //Project Change function
+    //Project Change function
     public function projch($id)
     {
-       
+
         $active_proj = Setting::where('user_id', Auth::user()->id)->where('key', 'active_project')->first();
         $active_proj->value = $id;
         $active_proj->save();
-        
+
         session(['project_id' => $id]);
 
         // $active_yr = Setting::where('user_id', Auth::user()->id)->where('key', 'active_year')->first();
@@ -189,11 +187,11 @@ class ProjectController extends Controller
             $spreadsheet->getActiveSheet()->getStyle($col)->getNumberFormat()->setFormatCode($FORMAT_ACCOUNTING);
         }
 
-
         $i = 0;
-        $trades = Trade::where('project_id', $proj_id)->where('cost', null)->get();
-      
 
+        // $trades_rev = Trade::where('project_id', $proj_id)->where('revenue', null)->get();
+
+        //prject Date Divided Start
         $project = Project::where('id', $proj_id)->first();
 
         $start = Carbon::createFromFormat('Y-m-d', $project->start);
@@ -219,33 +217,22 @@ class ProjectController extends Controller
                 $lastDayofMonths = [Carbon::parse($lastDayofMonth)->format('M d, Y')];
                 $spreadsheet->getActiveSheet()->fromArray($lastDayofMonths, NULL, $a . '4')->getColumnDimension($a)->setWidth(15);
             }
-
-            // dd($start);
             $a++;
 
             //Top
             $spreadsheet->getActiveSheet()->getStyle('E3:' . $a . '3')
                 ->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
-            //Le
+            //Bottom
             $spreadsheet->getActiveSheet()->getStyle('E4:' . $a . '4')
                 ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
-
+            //Left
             $spreadsheet->getActiveSheet()->getStyle('E3')
                 ->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
-
+            //Right
             $spreadsheet->getActiveSheet()->getStyle('E4')
                 ->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
 
-
-
-            //     ->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
             $start = Carbon::parse($lastDayofMonth)->addDays(1)->toDateString();
-
-
-
-
-            //To get the next month by previous month last day
-
         }
 
         $spreadsheet->getActiveSheet()->getStyle($a . '3')
@@ -254,14 +241,6 @@ class ProjectController extends Controller
         $spreadsheet->getActiveSheet()->getStyle($a . '4')
             ->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
 
-
-
-        foreach ($trades as $trade) {
-            $items[$i] = Item::where('trade_id', $trade->id)
-                ->where('actual', 0)->where('cost', null)
-                ->get();
-            $i++;
-        }
         $spreadsheet->getActiveSheet()->mergeCells('A1:C1');
         $spreadsheet->getActiveSheet()->fromArray([$project->name . ' Job Cost Report'], NULL, 'A1')->getColumnDimension('A')->setWidth(20);
         $spreadsheet->getActiveSheet()->getStyle('A1:C1')
@@ -280,9 +259,49 @@ class ProjectController extends Controller
 
         $spreadsheet->getActiveSheet()->fromArray([Carbon::parse($project->start)->format('M d, Y')], NULL, 'E4')->getColumnDimension('E')->setWidth(15);
         $spreadsheet->getActiveSheet()->fromArray([Carbon::parse($project->end)->format('M d, Y')], NULL, 'F4')->getColumnDimension('F')->setWidth(15);
-        // dd($trades);
-        $i = 6;
+        // Project name and date divided end.
 
+        // Trade Revenue
+        $trades = Trade::where('project_id', $proj_id)->where('cost', null)->get();
+        $i = 0;
+        foreach ($trades as $trade) {
+            $items[$i] = Item::where('trade_id', $trade->id)
+                ->where('actual', 0)->where('cost', null)
+                ->get();
+            $i++;
+        }
+
+        // Trade Cost
+        $trades_cost = Trade::where('project_id', $proj_id)->where('revenue', null)->get();
+        $i = 0;
+        foreach ($trades_cost as $trade) {
+            $items_cost[$i] = Item::where('trade_id', $trade->id)
+                ->where('actual', 0)->where('revenue', null)
+                ->get();
+            $i++;
+        }
+
+
+        //Actual Revenue
+        $actual_revenue = Trade::where('project_id', $proj_id)->where('cost', null)->get();
+        // dd($actual_revenue);
+        $i = 0;
+        foreach ($actual_revenue as $trade) {
+            $item_rev[$i] = Item::where('trade_id', $trade->id)
+                ->where('actual', 1)
+                ->where('cost', 0.00)
+                ->get();
+            $i++;
+        }
+        // dd($item_rev);
+
+
+
+
+
+
+        $i = 6;
+        // Trade Revenue
         for ($x = 0; $x < count($trades); $x++) {
             $trade_name = [$trades[$x]->name];
             $trade_revenue = [$trades[$x]->revenue];
@@ -292,8 +311,6 @@ class ProjectController extends Controller
             $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
-
-
             $a = 'H';
             $z = 0;
             // dd($items);
@@ -301,14 +318,103 @@ class ProjectController extends Controller
                 $itemss[$z] = $item;
                 $z++;
             }
+
+            // dd($itemss);
+            $start = Carbon::createFromFormat('Y-m-d', $project->start);
+            $end = Carbon::createFromFormat('Y-m-d', $itemss[$x][0]->start);
+            $diff = $start->diffInMonths($end);
+            for ($z = 0; $z < $diff; $z++) {
+                $a++;
+            }
+
             foreach ($itemss[$x] as $value) {
                 $item_revenue = [$value->revenue];
                 $spreadsheet->getActiveSheet()->fromArray($item_revenue, NULL, $a . $i);
-
                 $a++;
             }
             $i++;
         }
+
+        $i += 3;
+        $spreadsheet->getActiveSheet()->fromArray(['Estimated Project Cost'], NULL, 'B' . $i);
+        $i++;
+
+        // Trade Cost
+        for ($x = 0; $x < count($trades_cost); $x++) {
+            $trade_name = [$trades_cost[$x]->name];
+            $trade_revenue = [$trades_cost[$x]->cost];
+            $tradte_start = [Carbon::parse($trades[$x]->start)->format('M d, Y')];
+            $trade_end = [Carbon::parse($trades[$x]->end)->format('M d, Y')];
+            $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
+            $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
+            $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
+            $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
+            $a = 'H';
+            $z = 0;
+            // dd($items);
+            foreach ($items_cost as $item) {
+                $itemss[$z] = $item;
+                $z++;
+            }
+
+            $start = Carbon::createFromFormat('Y-m-d', $project->start);
+            $end = Carbon::createFromFormat('Y-m-d', $itemss[$x][0]->start);
+            $diff = $start->diffInMonths($end);
+            for ($z = 0; $z < $diff; $z++) {
+                $a++;
+            }
+
+            foreach ($itemss[$x] as $value) {
+                $item_cost = [$value->cost];
+                $spreadsheet->getActiveSheet()->fromArray($item_cost, NULL, $a . $i);
+                $a++;
+            }
+            $i++;
+        }
+
+        $i += 3;
+        $spreadsheet->getActiveSheet()->fromArray(['Actual Project Revenue'], NULL, 'B' . $i);
+        $i++;
+
+        for ($x = 0; $x < count($actual_revenue); $x++) {
+            $trade_name = [$actual_revenue[$x]->name];
+            $trade_revenue = [$actual_revenue[$x]->revenue];
+            $tradte_start = [Carbon::parse($trades[$x]->start)->format('M d, Y')];
+            $trade_end = [Carbon::parse($trades[$x]->end)->format('M d, Y')];
+            $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
+            $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
+            $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
+            $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
+            $a = 'H';
+            $z = 0;
+            // dd($item_rev);
+            foreach ($item_rev as $item) {
+                // dd($item);
+                $itemss[$z] = $item;
+                $z++;
+            }
+
+
+            // $start = Carbon::createFromFormat('Y-m-d', $project->start);
+            // $end = Carbon::createFromFormat('Y-m-d', $itemss[$x][0]->start);
+            // $diff = $start->diffInMonths($end);
+            // dd($diff);
+
+            // for ($z = 0; $z < $diff; $z++) {
+            //     $a++;`
+            // }
+
+            // dd($itemss);
+            foreach ($itemss[$x] as $value) {
+                // dd($value->revenue);
+                $item_revenue = [$value->revenue];
+                $spreadsheet->getActiveSheet()->fromArray($item_revenue, NULL, $a . $i);
+                $a++;
+            }
+            $i++;
+        }
+
+
 
 
 
