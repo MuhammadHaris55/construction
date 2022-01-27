@@ -260,6 +260,7 @@ export default {
       cost: props.item.cost,
       actual: 1,
       trade_id: props.item.trade_id,
+      parent_id: props.item.parent_id,
     });
     return { form };
   },

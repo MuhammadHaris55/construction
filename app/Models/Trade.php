@@ -10,7 +10,7 @@ class Trade extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name','start','end','revenue','cost','actual','project_id','enabled'
+        'name','start','end','revenue','cost','actual','project_id','enabled', 'parent_id'
     ];
 
     public function project(){
@@ -20,6 +20,17 @@ class Trade extends Model
     public function items()
     {
         return $this->hasMany('App\Models\Item', 'trade_id');
+    }
+
+    //for self-referencing
+    public function parent()
+    {
+        return $this->belongsTo('Trade', 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany('Trade', 'parent_id');
     }
 
 }

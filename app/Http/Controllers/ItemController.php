@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 use App\Models\Item;
 use App\Models\Project;
+use App\Models\Trade;
 use Illuminate\Http\Request as Req;
 
 class ItemController extends Controller
@@ -133,6 +134,7 @@ class ItemController extends Controller
                 'revenue' => intval($item->revenue),
                 'cost' => intval($item->cost),
                 'trade_id' => $item->trade_id,
+                'parent_id' => $item->parent_id,
                 'trade_name' => $item->trade->name,
                 // 'unit_id' =>$item->unit_id,
             ],
@@ -151,16 +153,18 @@ class ItemController extends Controller
         if($request->revenue > 0){
             $pre_item = Item::where('start', $request->start)
                 ->where('end', $request->end)
-                ->where('trade_id', $request->trade_id)
+                ->where('parent_id', $request->parent_id)
                 ->where('actual', $request->actual)
-                ->where('cost', $request->cost)
+                // ->where('trade_id', $request->trade_id)
+                // ->where('cost', $request->cost)
                 ->first();
         }else {
             $pre_item = Item::where('start', $request->start)
                 ->where('end', $request->end)
-                ->where('trade_id', $request->trade_id)
+                ->where('parent_id', $request->parent_id)
                 ->where('actual', $request->actual)
-                ->where('revenue', $request->revenue)
+                // ->where('trade_id', $request->trade_id)
+                // ->where('revenue', $request->revenue)
                 ->first();
         }
         
@@ -168,15 +172,53 @@ class ItemController extends Controller
         {
             return Redirect::route('actual_items')->with('warning', 'Item already exist.');
         } else {
-            Item::create([
-                'start' => $request->start,
-                'end' => $request->end,
-                'revenue' => $request->revenue,
-                'cost' => $request->cost,
-                'actual' => $request->actual,
-                'trade_id' => $request->trade_id,
-                'project_id' => session('project_id'),
-            ]);
+            $act_trade = Trade::where('parent_id', $request->parent_id)->where('actual', 1)->first();
+            if($act_trade)
+            {
+                Item::create([
+                    'start' => $request->start,
+                    'end' => $request->end,
+                    'revenue' => $request->revenue,
+                    'cost' => $request->cost,
+                    // 'actual' => $request->actual,
+                    'actual' => 1,
+                    // 'trade_id' => $request->trade_id,
+                    'trade_id' => $act_trade->id,
+                    'parent_id' => $act_trade->parent_id,
+                    'project_id' => session('project_id'),
+                ]);
+                $revenue_sum = Item::where('parent_id', $request->trade_id)->where('actual', 1)->sum('revenue');
+                $cost_sum = Item::where('parent_id', $request->trade_id)->where('actual', 1)->sum('cost');
+                $act_trade->revenue = $revenue_sum;
+                $act_trade->cost = $cost_sum;
+                $act_trade->save();
+            } else {
+                $act_trade = Trade::where('parent_id', $request->parent_id)->first();
+                //Creating trade in database
+                $trade = Trade::create([
+                    'name' => $act_trade->name,
+                    'start' => Request::input('start'),
+                    'end' => Request::input('end'),
+                    'revenue' => Request::input('revenue'),
+                    'cost' => Request::input('cost'),
+                    'actual' => Request::input('actual'),
+                    // 'project_id' => Request::input('project_id')['id'],
+                    'project_id' => session('project_id'),
+                    'parent_id' => $act_trade->parent_id,
+                ]);
+                Item::create([
+                    'start' => $request->start,
+                    'end' => $request->end,
+                    'revenue' => $request->revenue,
+                    'cost' => $request->cost,
+                    // 'actual' => $request->actual,
+                    'actual' => 1,
+                    'trade_id' => $trade->id,
+                    'parent_id' => $act_trade->parent_id,
+                    'project_id' => session('project_id'),
+                ]);
+            }
+            
             return Redirect::route('actual_items')->with('success', 'Item created.');
         }
     }
@@ -215,6 +257,15 @@ class ItemController extends Controller
     public function destroy(Item $item)
     {
         $item->delete();
+
+        $trade = Trade::where('id', $item->trade_id)->first();
+        $revenue_sum = Item::where('trade_id', $request->trade_id)->where('actual', 1)->sum('revenue');
+        $cost_sum = Item::where('trade_id', $request->trade_id)->where('actual', 1)->sum('cost');
+        
+        $trade->revenue = $revenue_sum;
+        $trade->cost = $cost_sum;
+        $trade->save();
+
         return Redirect::back()->with('success', 'Item deleted.');
     }
 }
