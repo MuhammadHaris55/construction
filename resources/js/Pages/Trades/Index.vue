@@ -214,10 +214,11 @@ export default {
   components: {
     AppLayout,
     JetButton,
-    Paginator,
+    // Paginator,
     throttle,
     pickBy,
     Multiselect,
+    Pagination,
   },
 
   props: {

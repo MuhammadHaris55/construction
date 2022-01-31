@@ -361,8 +361,7 @@ export default {
   },
   methods: {
     isFirstOrLastOrDots(index, links_length, label) {
-      //   return index === 0 || index === links_length - 1 || label.includes("...");
-      return index === 0 || index === links_length - 1;
+      return index === 0 || index === links_length - 1 || label.includes("...");
     },
   },
   computed: {

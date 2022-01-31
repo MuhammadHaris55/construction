@@ -137,7 +137,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in balance" :key="item.id">
+            <tr v-for="item in balances.data" :key="item.id">
               <!-- <td class="py-1 px-4 border">
                 {{ item<select
         v-model="proj_id"
@@ -153,8 +153,8 @@
       </select>.name }}
               </td> -->
               <td class="py-1 px-4 border">
-                <!-- {{ item.trade_id }} -->
-                {{ item.trade.name }}
+                {{ item.trade_id }}
+                <!-- {{ item.trade.name }} -->
               </td>
               <td class="py-1 px-4 border text-center">
                 {{ item.start }}
@@ -179,7 +179,21 @@
                 >
                   <span>Edit</span>
                 </button> -->
-                <button
+                <inertia-link
+                  class="
+                    border
+                    rounded-xl
+                    px-4
+                    py-1
+                    m-1
+                    bg-blue-400
+                    hover:text-white hover:bg-blue-600
+                  "
+                  @click="actual(item.id)"
+                >
+                  <span>Actual</span>
+                </inertia-link>
+                <!-- <button
                   class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"
                   @click="actual(item.id)"
                 >
@@ -191,16 +205,15 @@
                   v-if="item.delete"
                 >
                   <span>Delete</span>
-                </button>
+                </button> -->
               </td>
             </tr>
-            <!-- <tr v-if="balances.data.length === 0">
+            <tr v-if="balances.data.length === 0">
               <td class="border-t px-6 py-4" colspan="4">No Record found.</td>
-            </tr> -->
+            </tr>
           </tbody>
         </table>
-        <!-- <pagination class="mt-10" :links="balances.links" /> -->
-        <!-- <pagination class="mt-6" :balances="balances" /> -->
+        <paginator class="mt-6" :balances="balances" />
       </div>
     </div>
   </app-layout>
@@ -209,9 +222,7 @@
 <script>
 import AppLayout from "@/Layouts/AppLayout";
 import JetButton from "@/Jetstream/Button";
-// import Paginator from "@/Layouts/Paginator";
-import Pagination from "@/Jetstream/Pagination";
-// import Pagination from "@/Jetstream/Pagination";
+import Paginator from "@/Layouts/Paginator";
 import { pickBy } from "lodash";
 import { throttle } from "lodash";
 import Multiselect from "@suadelabs/vue3-multiselect";
@@ -220,7 +231,7 @@ export default {
   components: {
     AppLayout,
     JetButton,
-    Pagination,
+    Paginator,
     throttle,
     pickBy,
     Multiselect,

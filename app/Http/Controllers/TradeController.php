@@ -44,7 +44,7 @@ class TradeController extends Controller
             'projects' => Project::all(),
             'projchange' => Project::where('id', session('project_id'))->first(),
             'balances' => $query->where('project_id', session('project_id'))
-                ->paginate()
+                ->paginate(1)
                 ->through(
                     fn ($trade) =>
                     [
@@ -54,7 +54,7 @@ class TradeController extends Controller
                         'end' => $trade->end,
                         'revenue' => $trade->revenue,
                         'cost' => $trade->cost,
-                        'actual' => $trade->actual == 0 ? 'Revenue' : 'Cost',
+                        'actual' => $trade->actual == 0 ? 'Estimated' : 'Actual',
                         'project_id' => $trade->project_id,
                         'enable' => $trade->enable,
                         'delete' => Item::where('trade_id', $trade->id)->first() ? false : true,

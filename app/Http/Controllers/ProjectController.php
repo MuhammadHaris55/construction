@@ -96,6 +96,7 @@ class ProjectController extends Controller
                 'user_id' => Auth::user()->id,
             ]);
 
+            Storage::makeDirectory('/public/' . $project->id);
             session(['project_id' => $project->id]);
         });
         return Redirect::route('projects')->with('success', 'Project created');
@@ -181,17 +182,13 @@ class ProjectController extends Controller
     public function excel($proj_id)
     {
         $spreadsheet = new Spreadsheet();
-        $colArray = ['H:H', 'I:I', 'J:J', 'K:K'];
-        foreach ($colArray as $key => $col) {
-            $FORMAT_ACCOUNTING = '_(* #,##0.00_);_(* \(#,##0.00\);_(* "-"??_);_(@_)';
-            $spreadsheet->getActiveSheet()->getStyle($col)->getNumberFormat()->setFormatCode($FORMAT_ACCOUNTING);
-        }
+        $spreadsheet->getDefaultStyle()->getFont()->setName('Times New Roman');
+        $spreadsheet->getDefaultStyle()->getFont()->setSize(11);
 
         $i = 0;
 
-        // $trades_rev = Trade::where('project_id', $proj_id)->where('revenue', null)->get();
 
-        //prject Date Divided Start
+
         $project = Project::where('id', $proj_id)->first();
 
         $start = Carbon::createFromFormat('Y-m-d', $project->start);
@@ -217,6 +214,13 @@ class ProjectController extends Controller
                 $lastDayofMonths = [Carbon::parse($lastDayofMonth)->format('M d, Y')];
                 $spreadsheet->getActiveSheet()->fromArray($lastDayofMonths, NULL, $a . '4')->getColumnDimension($a)->setWidth(15);
             }
+            $colArray = ['D:D', $a . ':' . $a];
+            foreach ($colArray as $key => $col) {
+
+                $FORMAT_ACCOUNTING = '_($ #,##0.00_);_($ \(#,##0.00\);_($ "-"??_);_(@_)';
+                $spreadsheet->getActiveSheet()->getStyle($col)->getNumberFormat()->setFormatCode($FORMAT_ACCOUNTING);
+            }
+
             $a++;
 
             //Top
@@ -245,11 +249,12 @@ class ProjectController extends Controller
         $spreadsheet->getActiveSheet()->fromArray([$project->name . ' Job Cost Report'], NULL, 'A1')->getColumnDimension('A')->setWidth(20);
         $spreadsheet->getActiveSheet()->getStyle('A1:C1')
             ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
+
         // $spreadsheet->getActiveSheet()->getstyle('A1:E1')
         //     ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
         $spreadsheet->getActiveSheet()->fromArray(['Estimated Project Revenue'], NULL, 'B4')->getColumnDimension('B')->setWidth(15);
-        $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+        $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(27);
         $spreadsheet->getActiveSheet()->getStyle('B4:C4')
             ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
 
@@ -283,34 +288,49 @@ class ProjectController extends Controller
 
 
         //Actual Revenue
-        $actual_revenue = Trade::where('project_id', $proj_id)->where('cost', null)->get();
-        // dd($actual_revenue);
+        $actual_revenue = Trade::where('project_id', $proj_id)->where('actual', 1)->where('cost', '!>', 0)->get();
         $i = 0;
         foreach ($actual_revenue as $trade) {
-            $item_rev[$i] = Item::where('trade_id', $trade->id)
+            $item_rev[$i] = Item::where('parent_id', $trade->parent_id)
                 ->where('actual', 1)
-                ->where('cost', 0.00)
+                ->where('cost', '!>', 0)
                 ->get();
             $i++;
         }
-        // dd($item_rev);
 
+        // Actual Cost
+        $actual_cost = Trade::where('project_id', $proj_id)->where('actual', 1)->where('revenue', '!>', 0)->get();
 
+        $i = 0;
+        foreach ($actual_cost as $trade) {
 
+            $item_cos[$i] = Item::where('parent_id', $trade->parent_id)
+                ->where('actual', 1)
+                ->where('revenue', '!>', 0)
+                ->get();
+            $i++;
+        }
 
+        $total_est_revenue = 0;
+        $total_est_cost = 0;
+        $total_act_revenue = 0;
+        $total_act_cost = 0;
+        // $t_item_est_rev = 0;
 
 
         $i = 6;
-        // Trade Revenue
+        // Trade Estimate Revenue
         for ($x = 0; $x < count($trades); $x++) {
             $trade_name = [$trades[$x]->name];
-            $trade_revenue = [$trades[$x]->revenue];
+            $trade_revenue = [strval($trades[$x]->revenue)];
+            $total_est_revenue = $total_est_revenue += $trades[$x]->revenue;
             $tradte_start = [Carbon::parse($trades[$x]->start)->format('M d, Y')];
             $trade_end = [Carbon::parse($trades[$x]->end)->format('M d, Y')];
             $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
+
             $a = 'H';
             $z = 0;
             // dd($items);
@@ -328,30 +348,42 @@ class ProjectController extends Controller
             }
 
             foreach ($itemss[$x] as $value) {
-                $item_revenue = [$value->revenue];
+                $item_revenue = [strval($value->revenue)];
+                // dd($item_revenue[0]);
                 $spreadsheet->getActiveSheet()->fromArray($item_revenue, NULL, $a . $i);
                 $a++;
             }
+
             $i++;
         }
+        // dd($t_item_est_rev);
+        $i++;
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
+            ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray([strval($total_est_revenue)], NULL, 'D' . $i);
+
 
         $i += 3;
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
+            ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
         $spreadsheet->getActiveSheet()->fromArray(['Estimated Project Cost'], NULL, 'B' . $i);
-        $i++;
+        $i += 2;
 
-        // Trade Cost
+        // Trade Estimate Cost
         for ($x = 0; $x < count($trades_cost); $x++) {
             $trade_name = [$trades_cost[$x]->name];
-            $trade_revenue = [$trades_cost[$x]->cost];
-            $tradte_start = [Carbon::parse($trades[$x]->start)->format('M d, Y')];
-            $trade_end = [Carbon::parse($trades[$x]->end)->format('M d, Y')];
+            $trade_cost = [strval($trades_cost[$x]->cost)];
+            $total_est_cost = $total_est_cost += $trades_cost[$x]->cost;
+            $tradte_start = [Carbon::parse($trades_cost[$x]->start)->format('M d, Y')];
+            $trade_end = [Carbon::parse($trades_cost[$x]->end)->format('M d, Y')];
             $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
-            $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
+            $spreadsheet->getActiveSheet()->fromArray($trade_cost, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
             $a = 'H';
             $z = 0;
-            // dd($items);
+            // dd($trades);
             foreach ($items_cost as $item) {
                 $itemss[$z] = $item;
                 $z++;
@@ -365,22 +397,39 @@ class ProjectController extends Controller
             }
 
             foreach ($itemss[$x] as $value) {
-                $item_cost = [$value->cost];
+                $item_cost = [strval($value->cost)];
                 $spreadsheet->getActiveSheet()->fromArray($item_cost, NULL, $a . $i);
                 $a++;
             }
             $i++;
         }
 
-        $i += 3;
-        $spreadsheet->getActiveSheet()->fromArray(['Actual Project Revenue'], NULL, 'B' . $i);
         $i++;
 
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
+            ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray([strval($total_est_cost)], NULL, 'D' . $i);
+        $i += 2;
+
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
+            ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $total_est_profit = $total_est_revenue - $total_est_cost;
+        $spreadsheet->getActiveSheet()->fromArray(['Total Estimated Profit'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray([strval($total_est_profit)], NULL, 'D' . $i);
+
+        $i += 3;
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
+            ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
+        $spreadsheet->getActiveSheet()->fromArray(['Actual Project Revenue'], NULL, 'B' . $i);
+        $i += 2;
+        // Trade Actual Revenue
         for ($x = 0; $x < count($actual_revenue); $x++) {
             $trade_name = [$actual_revenue[$x]->name];
-            $trade_revenue = [$actual_revenue[$x]->revenue];
-            $tradte_start = [Carbon::parse($trades[$x]->start)->format('M d, Y')];
-            $trade_end = [Carbon::parse($trades[$x]->end)->format('M d, Y')];
+            $trade_revenue = [strval($actual_revenue[$x]->revenue)];
+            $total_act_revenue = $total_act_revenue += $actual_revenue[$x]->revenue;
+            $tradte_start = [Carbon::parse($actual_revenue[$x]->start)->format('M d, Y')];
+            $trade_end = [Carbon::parse($actual_revenue[$x]->end)->format('M d, Y')];
             $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
@@ -389,215 +438,108 @@ class ProjectController extends Controller
             $z = 0;
             // dd($item_rev);
             foreach ($item_rev as $item) {
-                // dd($item);
                 $itemss[$z] = $item;
                 $z++;
             }
 
+            $start = Carbon::createFromFormat('Y-m-d', $project->start);
+            $end = Carbon::createFromFormat('Y-m-d', $itemss[$x][0]->start);
+            $diff = $start->diffInMonths($end);
 
-            // $start = Carbon::createFromFormat('Y-m-d', $project->start);
-            // $end = Carbon::createFromFormat('Y-m-d', $itemss[$x][0]->start);
-            // $diff = $start->diffInMonths($end);
-            // dd($diff);
+            for ($z = 0; $z < $diff; $z++) {
+                $a++;
+            }
 
-            // for ($z = 0; $z < $diff; $z++) {
-            //     $a++;`
-            // }
-
-            // dd($itemss);
             foreach ($itemss[$x] as $value) {
-                // dd($value->revenue);
-                $item_revenue = [$value->revenue];
+                $item_revenue = [strval($value->revenue)];
                 $spreadsheet->getActiveSheet()->fromArray($item_revenue, NULL, $a . $i);
                 $a++;
             }
+
             $i++;
-        }
+        };
+        $i++;
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
+            ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
+        $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray([strval($total_act_revenue)], NULL, 'D' . $i);
 
+        $i += 3;
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
+            ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
+        $spreadsheet->getActiveSheet()->fromArray(['Actual Project Cost'], NULL, 'B' . $i);
+        $i += 2;
 
+        for ($x = 0; $x < count($actual_cost); $x++) {
+            $trade_name = [$actual_cost[$x]->name];
+            $trade_cost = [strval($actual_cost[$x]->cost)];
+            $total_act_cost = $total_act_cost += $actual_cost[$x]->cost;
+            $tradte_start = [Carbon::parse($actual_cost[$x]->start)->format('M d, Y')];
+            $trade_end = [Carbon::parse($actual_cost[$x]->end)->format('M d, Y')];
+            $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
+            $spreadsheet->getActiveSheet()->fromArray($trade_cost, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
+            $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
+            $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
+            $a = 'H';
+            $z = 0;
 
+            foreach ($item_cos as $item) {
+                $itemss[$z] = $item;
+                $z++;
+            }
 
-        // $i = 5;
-        // foreach ($trades as $trade) {
-        //     $trade_name = [$trade->name];
-        //     $trade_revenue = [$trade->revenue];
-        //     $tradte_start = [$trade->start];
-        //     $trade_end = [$trade->end];
-        //     $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i)->setMergeCells(['A' . $i . ':' . 'C' . $i]);
-        //     $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i);
-        //     $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
-        //     $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
-        //     $i++;
-        // }
+            $start = Carbon::createFromFormat('Y-m-d', $project->start);
+            $end = Carbon::createFromFormat('Y-m-d', $itemss[$x][0]->start);
+            $diff = $start->diffInMonths($end);
 
+            for ($z = 0; $z < $diff; $z++) {
+                $a++;
+            }
 
+            foreach ($itemss[$x] as $value) {
+                $item_cost = [strval($value->cost)];
+                $spreadsheet->getActiveSheet()->fromArray($item_cost, NULL, $a . $i);
+                $a++;
+            }
+            $i++;
+        };
 
-        // dd($items);
+        $i++;
 
-        // dd($item_end);
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
+            ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray([strval($total_act_cost)], NULL, 'D' . $i);
+        $i += 2;
 
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
+            ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $total_act_profit = $total_act_revenue - $total_act_cost;
+        $spreadsheet->getActiveSheet()->fromArray(['Total Actual Project Profit'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray([strval($total_act_profit)], NULL, 'D' . $i);
+        $i += 3;
+        $spreadsheet->getActiveSheet()->fromArray(['Variance'], NULL, 'B' . $i);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
+            ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
+        $i += 2;
+        $spreadsheet->getActiveSheet()->fromArray(['Project Revenue'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray(['$' . strval($total_est_revenue - $total_act_revenue)], NULL, 'D' . $i);
+        $i++;
+        $spreadsheet->getActiveSheet()->fromArray(['Project Cost'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray(['$' . strval($total_est_cost - $total_act_cost)], NULL, 'D' . $i);
+        $i++;
 
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
+            ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->fromArray(['Project Profit'], NULL, 'C' . $i);
+        $spreadsheet->getActiveSheet()->fromArray(['$' . strval($total_est_profit - $total_act_profit)], NULL, 'D' . $i);
 
-        // dd($cnt);
-        // $spreadsheet->getActiveSheet()->fromArray($, NULL, 'h5');
-        // $widthArray = ['10','10', '10','10',  '10','10','20', '20', '20', '15', '25', '17', '17', '17', '20', '20', '20', '20', '20'];
-        // foreach (range('A', 'O') as $key => $col) {
-        //     $spreadsheet->getActiveSheet()->getColumnDimension($col)->setWidth($widthArray[$key]);
-        // }
+        // dd($total_est_revenue - $total_act_revenue);
 
-
-        // $spreadsheet->getActiveSheet()->setMergeCells(['D5:E5']);
-        //commit 192
-        // $spreadsheet->getActiveSheet()->getStyle('C3:C5')->applyFromArray(
-        // $spreadsheet->getActiveSheet()->getStyle('A1:D1')->applyFromArray(
-        //     array(
-        //         'font'  => array(
-        //             'bold'  =>  true,
-        //         ),
-        //         'alignment' => array(
-        //             'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-        //             'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-        //             'wrapText' => true,
-        //         ),
-        //     )
-        // );
-
-        // $spreadsheet->getActiveSheet()->getStyle('D3:D5')->applyFromArray(
-        //     array(
-        //         'alignment' => array(
-        //             'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-        //             'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-        //             'wrapText' => true,
-        //         ),
-        //     )
-        // );
-
-
-        // $item = Item::all();
-        // dd($item);
-
-        // $rowArray = ['SR#', 'BANK', 'ACCOUNT#', 'ACCOUNT TYPE', 'CURRENCY', 'ADDRESS', 'AS PER LEDGER', 'AS PER BANK STATEMENT', 'AS PER CONFIRMATION', 'DIFFERENCE', 'CREATED', 'SENT', 'REMINDER', 'RECEIVED'];
-        // / $spreadsheet->getActiveSheet()->fromArray($rowArray, NULL, 'B7');
-        // $widthArray = ['10', '5', '20', '20', '20', '15', '25', '17', '17', '17', '20', '20', '20', '20', '20'];
-        // foreach (range('A', 'O') as $key => $col) {
-        //     $spreadsheet->getActiveSheet()->getColumnDimension($col)->setWidth($widthArray[$key]);
-
-        // $spreadsheet->getActiveSheet()->fromArray(['PERIOD:'], NULL, 'C4');
-        // $spreadsheet->getActiveSheet()->fromArray(['SUBJECT:'], NULL, 'C5');
-        // $spreadsheet->getActiveSheet()->fromArray([$company->company->name], NULL, 'D3');
-        // $spreadsheet->getActiveSheet()->fromArray([$end ? $end->format("M d Y") : null], NULL, 'D4');
-        // $spreadsheet->getActiveSheet()->fromArray(['Bank Confirmation Control Sheet'], NULL, 'D5');
-
-        // $spreadsheet->getActiveSheet()->fromArray(['Prepared By:'], NULL, 'K3');
-        // $spreadsheet->getActiveSheet()->fromArray(['Reviewed By:'], NULL, 'K4');
-        // $spreadsheet->getActiveSheet()->fromArray(['Date:'], NULL, 'N3');
-        // $spreadsheet->getActiveSheet()->fromArray(['Date:'], NULL, 'N4');
-
-
-
-        // $spreadsheet->getActiveSheet()->getStyle('B7:O7')->applyFromArray(
-        //     array(
-        //         'fill' => array(
-        //             'fillType' => Fill::FILL_SOLID,
-        //             'color' => array('rgb' => '484848')
-        //         ),
-        //         'font'  => array(
-        //             'bold'  =>  true,
-        //             'color' => array('rgb' => 'FFFFFF')
-        //         ),
-        //         'alignment' => array(
-        //             'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-        //             'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-        //             'wrapText' => true,
-        //         ),
-        //     )
-        // );
-
-        // $rowArray = ['SR#', 'BANK', 'ACCOUNT#', 'ACCOUNT TYPE', 'CURRENCY', 'ADDRESS', 'AS PER LEDGER', 'AS PER BANK STATEMENT', 'AS PER CONFIRMATION', 'DIFFERENCE', 'CREATED', 'SENT', 'REMINDER', 'RECEIVED'];
-        // $spreadsheet->getActiveSheet()->fromArray($rowArray, NULL, 'B7');
-        // $widthArray = ['10', '5', '20', '20', '20', '15', '25', '17', '17', '17', '20', '20', '20', '20', '20'];
-        // foreach (range('A', 'O') as $key => $col) {
-        //     $spreadsheet->getActiveSheet()->getColumnDimension($col)->setWidth($widthArray[$key]);
-        // }
-
-        // $dataa = \App\Models\BankConfirmation::where('company_id', session('company_id'))->where('year_id', session('year_id'))->first();
-        // if ($dataa) {
-        //     $data = \App\Models\BankBalance::where('company_id', session('company_id'))->where('year_id', session('year_id'))->get()
-        //         ->map(
-        //             function ($bal) {
-        //                 return [
-        //                     'id' => $bal->id,
-        //                     'bank' => $bal->bankAccount->bankBranch->bank->name,
-        //                     'number' => $bal->bankAccount->name,
-        //                     'type' => $bal->bankAccount->type,
-        //                     'currency' => $bal->bankAccount->currency,
-        //                     'branch' => $bal->bankAccount->bankBranch->address,
-        //                     'ledger' => $bal->ledger,
-        //                     'statement' => $bal->statement,
-        //                     'confirmation' => $bal->confirmation,
-        //                     'difference' => $bal->statement - $bal->confirmation ? $bal->statement - $bal->confirmation : '0',
-        //                     'confirm_create' => $bal->bankAccount->bankBranch->bankConfirmations()->where('company_id', session('company_id'))->where('year_id', session('year_id'))->get()->first()->confirm_create,
-        //                     'sent' => $bal->bankAccount->bankBranch->bankConfirmations
-        //                         ->filter(function ($confirmation) {
-        //                             return ($confirmation->company_id == session('company_id') && $confirmation->year_id == session('year_id'));
-        //                         })->first()->sent,
-        //                     'reminder' => $bal->bankAccount->bankBranch->bankConfirmations()->where('company_id', session('company_id'))->where('year_id', session('year_id'))->get()->first()->reminder,
-        //                     'received' => $bal->bankAccount->bankBranch->bankConfirmations()->where('company_id', session('company_id'))->where('year_id', session('year_id'))->get()->first()->received,
-        //                 ];
-        //             }
-        //         )
-        //         ->toArray();
-        // } else {
-        //     return Redirect::route('confirmations')->with('success', 'Please Create Confirmation.');
-        // }
-
-        // $cnt = count($data);
-        // for ($i = 0; $i < $cnt; $i++) {
-        //     // dd($data[$i]);
-        //     $data[$i]['confirm_create'] = $data[$i]['confirm_create'] ? new Carbon($data[$i]['confirm_create']) : null;
-        //     $data[$i]['confirm_create'] = $data[$i]['confirm_create'] ? $data[$i]['confirm_create']->format('F j, Y') : null;
-        //     $data[$i]['sent'] = $data[$i]['sent'] ? new Carbon($data[$i]['sent']) : null;
-        //     $data[$i]['sent'] = $data[$i]['sent'] ? $data[$i]['sent']->format('F j, Y') : null;
-        //     $data[$i]['reminder'] = $data[$i]['reminder'] ? new Carbon($data[$i]['reminder']) : null;
-        //     $data[$i]['reminder'] = $data[$i]['reminder'] ? $data[$i]['reminder']->format('F j, Y') : null;
-        //     $data[$i]['received'] = $data[$i]['received'] ? new Carbon($data[$i]['received']) : null;
-        //     $data[$i]['received'] = $data[$i]['received'] ? $data[$i]['received']->format('F j, Y') : null;
-        // }
-
-
-        // // dd($cnt);
-        // $spreadsheet->getActiveSheet()->fromArray($data, NULL, 'B9');
-
-
-
-
-        // $total = 0;
-        // for ($i = 0; $i < $cnt; $i++) {
-        //     $total = $total + $data[$i]['ledger'];
-        // }
-
-        // // dd($total);
-        // $tstr = $cnt + 9;
-        // $tcell = "H" . strval($tstr);
-        // $spreadsheet->getActiveSheet()->setCellValue($tcell, $total);
-
-        // $styleArray = [
-        //     'borders' => [
-        //         'outline' => [
-        //             'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
-        //             'color' => [
-        //                 'rgb' => '484848',
-        //             ],
-
-
-        //         ],
-        //     ],
-        // ];
-        // $spreadsheet->getActiveSheet()->getStyle($tcell)->applyFromArray($styleArray);
 
         $writer = new Xlsx($spreadsheet);
-        $writer->save(storage_path('app/public/' . 'Control Sheet.xlsx'));
-        return response()->download(storage_path('app/public/' .  'Control Sheet.xlsx'));
+        $writer->save(storage_path('app/public/' . $proj_id . '/' . 'Control Sheet.xlsx'));
+        return response()->download(storage_path('app/public/' . $proj_id . '/' .   'Control Sheet.xlsx'));
     }
 }

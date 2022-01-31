@@ -183,13 +183,12 @@
                 </button>
               </td>
             </tr>
-            <!-- <tr v-if="balances.data.length === 0">
+            <tr v-if="balances.data.length === 0">
               <td class="border-t px-6 py-4" colspan="4">No Record found.</td>
-            </tr> -->
+            </tr>
           </tbody>
         </table>
-        <!-- <pagination class="mt-10" :links="balances.links" /> -->
-        <!-- <pagination class="mt-6" :balances="balances" /> -->
+        <paginator class="mt-6" :balances="balances" />
       </div>
     </div>
   </app-layout>
@@ -198,9 +197,7 @@
 <script>
 import AppLayout from "@/Layouts/AppLayout";
 import JetButton from "@/Jetstream/Button";
-// import Paginator from "@/Layouts/Paginator";
-import Pagination from "@/Jetstream/Pagination";
-// import Pagination from "@/Jetstream/Pagination";
+import Paginator from "@/Layouts/Paginator";
 import { pickBy } from "lodash";
 import { throttle } from "lodash";
 import Multiselect from "@suadelabs/vue3-multiselect";
@@ -209,7 +206,7 @@ export default {
   components: {
     AppLayout,
     JetButton,
-    Pagination,
+    Paginator,
     throttle,
     pickBy,
     Multiselect,
