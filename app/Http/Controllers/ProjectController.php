@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use Inertia\Inertia;
 use Illuminate\Http\Request as Req;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,7 @@ class ProjectController extends Controller
 
         return Inertia::render('Projects/Index', [
             'projects' => Project::first(),
-            'balances' => $query->paginate(1)
+            'balances' => $query->paginate(12)
                 ->through(
                     fn ($proj) =>
                     [
@@ -185,8 +186,8 @@ class ProjectController extends Controller
         $spreadsheet->getDefaultStyle()->getFont()->setName('Times New Roman');
         $spreadsheet->getDefaultStyle()->getFont()->setSize(11);
 
-        $i = 0;
 
+        $i = 0;
 
 
         $project = Project::where('id', $proj_id)->first();
@@ -220,10 +221,13 @@ class ProjectController extends Controller
                 $FORMAT_ACCOUNTING = '_($ #,##0.00_);_($ \(#,##0.00\);_($ "-"??_);_(@_)';
                 $spreadsheet->getActiveSheet()->getStyle($col)->getNumberFormat()->setFormatCode($FORMAT_ACCOUNTING);
             }
-
+            $tcell = $a;
             $a++;
 
             //Top
+            $spreadsheet->getActiveSheet()->getStyle('E3:' . $a . '3')->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->getStyle('E3:' . $a . '3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
             $spreadsheet->getActiveSheet()->getStyle('E3:' . $a . '3')
                 ->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
             //Bottom
@@ -233,17 +237,32 @@ class ProjectController extends Controller
             $spreadsheet->getActiveSheet()->getStyle('E3')
                 ->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
             //Right
+            $spreadsheet->getActiveSheet()->getStyle('E4:' . $a . '4')->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
             $spreadsheet->getActiveSheet()->getStyle('E4')
                 ->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
 
             $start = Carbon::parse($lastDayofMonth)->addDays(1)->toDateString();
         }
+        // $SUMRANGE = 'j6:j9';
+        // $spreadsheet->getActiveSheet()->setCellValue('j11', '=SUM(j6:j9)');
+
+
+
+
+
 
         $spreadsheet->getActiveSheet()->getStyle($a . '3')
             ->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
 
         $spreadsheet->getActiveSheet()->getStyle($a . '4')
             ->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
+
+
+
+        $spreadsheet->getActiveSheet()->mergeCells('A1:C1');
+        $spreadsheet->getActiveSheet()->getStyle('A1:C1')->getFont()->setSize(13);
+        $spreadsheet->getActiveSheet()->getStyle('A1:C1')->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $spreadsheet->getActiveSheet()->getStyle('A1:C1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $spreadsheet->getActiveSheet()->mergeCells('A1:C1');
         $spreadsheet->getActiveSheet()->fromArray([$project->name . ' Job Cost Report'], NULL, 'A1')->getColumnDimension('A')->setWidth(20);
@@ -253,8 +272,15 @@ class ProjectController extends Controller
         // $spreadsheet->getActiveSheet()->getstyle('A1:E1')
         //     ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
+
+        $spreadsheet->getActiveSheet()->mergeCells('B4:C4');
+        $spreadsheet->getActiveSheet()->getStyle('B4:C4')->getFont()->setSize(12);
+        $spreadsheet->getActiveSheet()->getStyle('B4:C4')->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $spreadsheet->getActiveSheet()->getStyle('B4:C4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
         $spreadsheet->getActiveSheet()->fromArray(['Estimated Project Revenue'], NULL, 'B4')->getColumnDimension('B')->setWidth(15);
         $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(27);
+
         $spreadsheet->getActiveSheet()->getStyle('B4:C4')
             ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
 
@@ -326,6 +352,7 @@ class ProjectController extends Controller
             $total_est_revenue = $total_est_revenue += $trades[$x]->revenue;
             $tradte_start = [Carbon::parse($trades[$x]->start)->format('M d, Y')];
             $trade_end = [Carbon::parse($trades[$x]->end)->format('M d, Y')];
+            $spreadsheet->getActiveSheet()->mergeCells('A' . $i . ':' . 'C' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
@@ -349,15 +376,28 @@ class ProjectController extends Controller
 
             foreach ($itemss[$x] as $value) {
                 $item_revenue = [strval($value->revenue)];
-                // dd($item_revenue[0]);
                 $spreadsheet->getActiveSheet()->fromArray($item_revenue, NULL, $a . $i);
                 $a++;
             }
 
             $i++;
         }
-        // dd($t_item_est_rev);
+        $tcell = 'H';
         $i++;
+        //trow_est_rev Mean Calcution Of Total Estimate Revenue
+        $trow_est_rev = $i;
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $trow_est_rev)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            // $spreadsheet->getActiveSheet()->getStyle('E3:' . $a . '3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $trow_est_rev, '=SUM(' . $tcell . 6 . ':' . $tcell . $i . ')');
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+        // dd($trow_est_rev);
+
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        // $spreadsheet->getActiveSheet()->getStyle('E3:' . $a . '3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
@@ -365,6 +405,12 @@ class ProjectController extends Controller
 
 
         $i += 3;
+        $spreadsheet->getActiveSheet()->mergeCells('B' . $i . ':' . 'C' . $i);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setSize(13);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $spreadsheet->getActiveSheet()->mergeCells('B' . $i . ':' . 'C' . $i);
         $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
             ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
         $spreadsheet->getActiveSheet()->fromArray(['Estimated Project Cost'], NULL, 'B' . $i);
@@ -378,6 +424,7 @@ class ProjectController extends Controller
             $tradte_start = [Carbon::parse($trades_cost[$x]->start)->format('M d, Y')];
             $trade_end = [Carbon::parse($trades_cost[$x]->end)->format('M d, Y')];
             $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
+            $spreadsheet->getActiveSheet()->mergeCells('A' . $i . ':' . 'C' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_cost, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
@@ -395,7 +442,6 @@ class ProjectController extends Controller
             for ($z = 0; $z < $diff; $z++) {
                 $a++;
             }
-
             foreach ($itemss[$x] as $value) {
                 $item_cost = [strval($value->cost)];
                 $spreadsheet->getActiveSheet()->fromArray($item_cost, NULL, $a . $i);
@@ -403,22 +449,58 @@ class ProjectController extends Controller
             }
             $i++;
         }
-
+        $tcell = 'H';
         $i++;
+        //trow_est_cost Mean Calcution Of Total Estimate Cost
+        $trow_est_cost = $trow_est_rev + 5;
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i,)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=SUM(' . $tcell . $trow_est_cost . ':' . $tcell . $i . ')');
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+        $trow_est_cost = $i;
+
 
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+
         $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
         $spreadsheet->getActiveSheet()->fromArray([strval($total_est_cost)], NULL, 'D' . $i);
         $i += 2;
 
+
+
+        //Calculation Of Total Estimate Profit trow_est_rev - trow_est_cost
+        $tcell = 'H';
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=(' . $tcell . $trow_est_rev . '-' . $tcell . $trow_est_cost . ')');
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+        $trow_est_profit = $i;
+
+
+
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $total_est_profit = $total_est_revenue - $total_est_cost;
         $spreadsheet->getActiveSheet()->fromArray(['Total Estimated Profit'], NULL, 'C' . $i);
         $spreadsheet->getActiveSheet()->fromArray([strval($total_est_profit)], NULL, 'D' . $i);
 
         $i += 3;
+        $spreadsheet->getActiveSheet()->mergeCells('B' . $i . ':' . 'C' . $i);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setSize(12);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $spreadsheet->getActiveSheet()->mergeCells('B' . $i . ':' . 'C' . $i);
         $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
             ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
         $spreadsheet->getActiveSheet()->fromArray(['Actual Project Revenue'], NULL, 'B' . $i);
@@ -431,6 +513,7 @@ class ProjectController extends Controller
             $tradte_start = [Carbon::parse($actual_revenue[$x]->start)->format('M d, Y')];
             $trade_end = [Carbon::parse($actual_revenue[$x]->end)->format('M d, Y')];
             $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
+            $spreadsheet->getActiveSheet()->mergeCells('A' . $i . ':' . 'C' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_revenue, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_end, NULL, 'F' . $i);
@@ -458,14 +541,35 @@ class ProjectController extends Controller
 
             $i++;
         };
+
+
+        $tcell = 'H';
         $i++;
+
+        //trow_act_revenue Mean Calculation Of Total Actual Revenue
+        $trow_act_rev = $trow_est_profit + 5;
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=SUM(' . $tcell . $trow_act_rev . ':' . $tcell . $i . ')');
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+        $trow_act_rev = $i;
+
+        // $i++;
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
 
         $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
         $spreadsheet->getActiveSheet()->fromArray([strval($total_act_revenue)], NULL, 'D' . $i);
 
         $i += 3;
+        $spreadsheet->getActiveSheet()->mergeCells('B' . $i . ':' . 'C' . $i);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setSize(12);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
             ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
         $spreadsheet->getActiveSheet()->fromArray(['Actual Project Cost'], NULL, 'B' . $i);
@@ -477,6 +581,7 @@ class ProjectController extends Controller
             $total_act_cost = $total_act_cost += $actual_cost[$x]->cost;
             $tradte_start = [Carbon::parse($actual_cost[$x]->start)->format('M d, Y')];
             $trade_end = [Carbon::parse($actual_cost[$x]->end)->format('M d, Y')];
+            $spreadsheet->getActiveSheet()->mergeCells('A' . $i . ':' . 'C' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_name, NULL, 'A' . $i);
             $spreadsheet->getActiveSheet()->fromArray($trade_cost, NULL, 'D' . $i)->getColumnDimension('D')->setWidth(15);
             $spreadsheet->getActiveSheet()->fromArray($tradte_start, NULL, 'E' . $i);
@@ -505,34 +610,95 @@ class ProjectController extends Controller
             $i++;
         };
 
+        $tcell = 'H';
         $i++;
+        //trow_act_cost Mean Calcution Of Total Actual Cost
+        $trow_act_cost = $trow_act_rev + 5;
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=SUM(' . $tcell . $trow_act_cost . ':' . $tcell . $i . ')');
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+        $trow_act_cost = $i;
 
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+
         $spreadsheet->getActiveSheet()->fromArray(['Total'], NULL, 'C' . $i);
         $spreadsheet->getActiveSheet()->fromArray([strval($total_act_cost)], NULL, 'D' . $i);
         $i += 2;
 
+        $tcell = 'H';
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=(' . $tcell . $trow_act_rev . '-' . $tcell . $trow_act_cost . ')');
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+        $trow_act_profit = $i;
+
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         $total_act_profit = $total_act_revenue - $total_act_cost;
         $spreadsheet->getActiveSheet()->fromArray(['Total Actual Project Profit'], NULL, 'C' . $i);
         $spreadsheet->getActiveSheet()->fromArray([strval($total_act_profit)], NULL, 'D' . $i);
         $i += 3;
+        $spreadsheet->getActiveSheet()->mergeCells('B' . $i . ':' . 'C' . $i);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setSize(12);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         $spreadsheet->getActiveSheet()->fromArray(['Variance'], NULL, 'B' . $i);
         $spreadsheet->getActiveSheet()->getStyle('B' . $i . ':' . 'C' . $i)
             ->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
         $i += 2;
+
+        $tcell = 'H';
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=(' . $tcell . $trow_est_rev . '-' . $tcell . $trow_act_rev . ')');
+            // $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+            //     ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+
+
         $spreadsheet->getActiveSheet()->fromArray(['Project Revenue'], NULL, 'C' . $i);
         $spreadsheet->getActiveSheet()->fromArray(['$' . strval($total_est_revenue - $total_act_revenue)], NULL, 'D' . $i);
         $i++;
+
+
+        $tcell = 'H';
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+         
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=(' . $tcell . $trow_est_cost . '-' . $tcell . $trow_act_cost . ')');
+            // $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+            //     ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+
         $spreadsheet->getActiveSheet()->fromArray(['Project Cost'], NULL, 'C' . $i);
         $spreadsheet->getActiveSheet()->fromArray(['$' . strval($total_est_cost - $total_act_cost)], NULL, 'D' . $i);
         $i++;
 
+        $tcell = 'H';
+        //Variance Estimate Profite - Actual Profit
+        for ($k = 0; $k <= $diff_in_months; $k++) {
+               $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=(' . $tcell . $trow_est_profit . '-' . $tcell . $trow_act_profit . ')');
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
+                ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            $tcell++;
+        }
+
+       
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         $spreadsheet->getActiveSheet()->fromArray(['Project Profit'], NULL, 'C' . $i);
+         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $spreadsheet->getActiveSheet()->fromArray(['$' . strval($total_est_profit - $total_act_profit)], NULL, 'D' . $i);
 
         // dd($total_est_revenue - $total_act_revenue);

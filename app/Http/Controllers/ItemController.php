@@ -43,7 +43,7 @@ class ItemController extends Controller
             'projchange' => Project::where('id', session('project_id'))->get(),
             'balance' => $query->where('project_id', session('project_id'))->with('trade')->get(),
             'balances' => $query->where('project_id', session('project_id'))
-            ->paginate()
+            ->paginate(12)
                 ->through(function ($item) {
                     return [
                         'id' => $item->id,
@@ -98,7 +98,7 @@ class ItemController extends Controller
             'filters' => request()->all(['search', 'searche', 'field', 'direction']),
             'projchange' => Project::where('id', session('project_id'))->get(),
             'balance' => $query->where('project_id', session('project_id'))->with('trade')->get(),
-            'balances' => $query->where('project_id', session('project_id'))->paginate()
+            'balances' => $query->where('project_id', session('project_id'))->paginate(12)
                 ->through(function ($item) {
                     return [
                         'id' => $item->id,

@@ -214,15 +214,14 @@ export default {
   components: {
     AppLayout,
     JetButton,
-    // Paginator,
+    Paginator,
     throttle,
     pickBy,
     Multiselect,
-    Pagination,
   },
 
   props: {
-    balances: Object,
+    balances: Array,
     filters: Object,
     trade: Object,
     projects: Object,

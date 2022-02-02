@@ -44,7 +44,7 @@ class TradeController extends Controller
             'projects' => Project::all(),
             'projchange' => Project::where('id', session('project_id'))->first(),
             'balances' => $query->where('project_id', session('project_id'))
-                ->paginate(1)
+                ->paginate(12)
                 ->through(
                     fn ($trade) =>
                     [
@@ -106,12 +106,10 @@ class TradeController extends Controller
             $end = Carbon::createFromFormat('Y-m-d', $proj_end);
             $diff_in_months = $start->diffInMonths($end);
 
-            // dd($diff_in_months);
-
             //According to month ...if months = 0 or months is > 0
             if ($diff_in_months > 0) {
                 $revenue = round($request->revenue / $diff_in_months, 2);
-                $cost = round($request->cost / $diff_in_months, 2);
+                $cost = round($request->cost / ($diff_in_months + 1), 2);
             } else {
                 $revenue =  $request->revenue;
                 $cost =  $request->cost;
