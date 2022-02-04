@@ -674,7 +674,7 @@ class ProjectController extends Controller
 
         $tcell = 'H';
         for ($k = 0; $k <= $diff_in_months; $k++) {
-         
+
             $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=(' . $tcell . $trow_est_cost . '-' . $tcell . $trow_act_cost . ')');
             // $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
             //     ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
@@ -688,21 +688,33 @@ class ProjectController extends Controller
         $tcell = 'H';
         //Variance Estimate Profite - Actual Profit
         for ($k = 0; $k <= $diff_in_months; $k++) {
-               $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+            $spreadsheet->getActiveSheet()->getStyle($tcell . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
             $spreadsheet->getActiveSheet()->setCellValue($tcell . $i, '=(' . $tcell . $trow_est_profit . '-' . $tcell . $trow_act_profit . ')');
             $spreadsheet->getActiveSheet()->getStyle($tcell . $i)
                 ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
             $tcell++;
         }
 
-       
+
         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)
             ->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
         $spreadsheet->getActiveSheet()->fromArray(['Project Profit'], NULL, 'C' . $i);
-         $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $spreadsheet->getActiveSheet()->getStyle('C' . $i . ':' . 'D' . $i)->getFont()->setBold(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
         $spreadsheet->getActiveSheet()->fromArray(['$' . strval($total_est_profit - $total_act_profit)], NULL, 'D' . $i);
 
         // dd($total_est_revenue - $total_act_revenue);
+
+
+        $spreadsheet->getActiveSheet()->getColumnDimension('G')->setWidth(3);
+
+        $i += 5;
+        $spreadsheet
+            ->getActiveSheet()
+            ->getStyle('G1:G' . $i)
+            ->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('FF696969');
 
 
         $writer = new Xlsx($spreadsheet);
