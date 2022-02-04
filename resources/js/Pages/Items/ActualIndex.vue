@@ -45,7 +45,7 @@
       <div class="">
         <table class="w-full shadow-lg border mt-4 ml-2 rounded-xl">
           <thead>
-            <tr class="bg-indigo-100">
+            <tr class="bg-gray-600 text-white">
               <!-- <th class="py-2 px-4 border">
                 <span @click="sort('name')">
                   Name
@@ -132,18 +132,13 @@
               <th class="py-2 px-4 border">End Date</th>
               <th class="py-2 px-4 border">Revenue</th>
               <th class="py-2 px-4 border">Cost</th>
-              <!-- <th class="py-2 px-4 border">Actual / Estimate</th> -->
               <th class="py-2 px-4 border">Action</th>
             </tr>
           </thead>
           <tbody>
-            <!-- <tr v-for="item in balances.data" :key="item.id"> -->
+            <tr v-for="item in balances.data" :key="item.id"></tr>
             <tr v-for="item in balance" :key="item.id">
-              <!-- <td class="py-1 px-4 border">
-                {{ item.name }}
-              </td> -->
               <td class="py-1 px-4 border">
-                <!-- {{ item.trade_id }} -->
                 {{ item.trade.name }}
               </td>
               <td class="py-1 px-4 border text-center">
@@ -158,9 +153,6 @@
               <td class="py-1 px-4 border">
                 {{ item.cost }}
               </td>
-              <!-- <td class="py-1 px-4 border">
-                {{ item.actual }}
-              </td> -->
 
               <td class="py-1 px-4 border text-center" style="width: 25%">
                 <!-- <button
@@ -169,18 +161,20 @@
                 >
                   <span>Edit</span>
                 </button> -->
-                <!-- <button
-                  class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"
-                  @click="actual(item.id)"
-                >
-                  <span>Actual</span>
-                </button> -->
-                <button
-                  class="border bg-red-500 rounded-xl px-4 py-1 m-1"
+                <Link
+                  class="
+                    border
+                    bg-red-500
+                    rounded-xl
+                    px-4
+                    py-1
+                    m-1
+                    hover:text-white hover:bg-red-600
+                  "
                   @click="destroy(item.id)"
                 >
                   <span>Delete</span>
-                </button>
+                </Link>
               </td>
             </tr>
             <tr v-if="balances.data.length === 0">
@@ -201,6 +195,7 @@ import Paginator from "@/Layouts/Paginator";
 import { pickBy } from "lodash";
 import { throttle } from "lodash";
 import Multiselect from "@suadelabs/vue3-multiselect";
+import { Head, Link } from "@inertiajs/inertia-vue3";
 
 export default {
   components: {
@@ -210,6 +205,8 @@ export default {
     throttle,
     pickBy,
     Multiselect,
+    Link,
+    Head,
   },
 
   props: {

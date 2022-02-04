@@ -17,6 +17,18 @@
     </div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
       <jet-button @click="create" class="mt-4 ml-2">Create</jet-button>
+      <!-- class="
+            border
+            inline-block
+            bg-blue-400
+            hover:bg-blue-600
+            hover:text-white
+            shadow-md
+            rounded-xl
+            px-4
+            py-1
+            m-1
+          " -->
       <input
         type="search"
         v-if="projects"
@@ -25,22 +37,10 @@
         placeholder="Search by name..."
         class="pr-2 pb-2 w-full lg:w-1/4 ml-6 rounded-md placeholder-indigo-300"
       />
-      <!-- <select
-        v-model="co_id"
-        v-if="companies[0]"
-        class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-2"
-        label="company"
-        placeholder="Select Company"
-        @change="coch"
-      >
-        <option v-for="type in companies" :key="type.id" :value="type.id">
-          {{ type.name }}
-        </option>
-      </select> -->
       <div class="">
         <table class="w-full shadow-lg border mt-4 ml-2 rounded-xl">
           <thead>
-            <tr class="bg-indigo-100">
+            <tr class="bg-gray-600 text-white">
               <th class="py-2 px-4 border">
                 <span @click="sort('name')">
                   Name
@@ -139,33 +139,64 @@
               <td class="py-1 px-4 border text-center">{{ item.start }}</td>
               <td class="py-1 px-4 border text-center">{{ item.end }}</td>
               <td class="py-1 px-4 border text-center">
-                <button
-                  class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"
+                <Link
+                  class="
+                    border
+                    rounded-xl
+                    px-4
+                    py-1
+                    m-1
+                    bg-blue-400
+                    hover:text-white hover:bg-blue-600
+                  "
                   @click="edit(item.id)"
                 >
                   <span>Edit</span>
-                </button>
+                </Link>
                 <div
                   class="
                     border
                     inline-block
-                    bg-indigo-300
+                    bg-blue-400
                     shadow-md
                     rounded-xl
                     px-4
                     py-1
                     m-1
+                    hover:text-white hover:bg-blue-600
                   "
                 >
-                  <a v-bind:href="'excel/' + item.id">Generate Report</a>
+                  <a v-bind:href="'excel/' + item.id">Job Cost Report</a>
                 </div>
-                <button
-                  class="border bg-red-500 rounded-xl px-4 py-1 m-1"
-                  @click="destroy(item.id)"
+                <Link
+                  class="
+                    border
+                    bg-red-400
+                    rounded-xl
+                    px-4
+                    py-1
+                    m-1
+                    hover:text-white hover:bg-red-600
+                  "
                   v-if="item.delete"
+                  @click="destroy(item.id)"
                 >
                   <span>Delete</span>
-                </button>
+                </Link>
+                <inertia-link
+                  disabled
+                  class="
+                    bg-transparent-400
+                    rounded-xl
+                    px-10
+                    py-1
+                    m-1
+                    text-transparent
+                  "
+                  v-else
+                >
+                  <span></span>
+                </inertia-link>
               </td>
             </tr>
             <tr v-if="balances.data.length === 0">
@@ -185,6 +216,7 @@ import JetButton from "@/Jetstream/Button";
 import Paginator from "@/Layouts/Paginator";
 import { pickBy } from "lodash";
 import { throttle } from "lodash";
+import { Head, Link } from "@inertiajs/inertia-vue3";
 
 export default {
   components: {
@@ -193,6 +225,8 @@ export default {
     Paginator,
     throttle,
     pickBy,
+    Head,
+    Link,
   },
 
   props: {

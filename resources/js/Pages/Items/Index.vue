@@ -45,7 +45,7 @@
       <div class="">
         <table class="w-full shadow-lg border mt-4 ml-2 rounded-xl">
           <thead>
-            <tr class="bg-indigo-100">
+            <tr class="bg-gray-600 text-white">
               <!-- <th class="py-2 px-4 border">
                 <span @click="sort('name')">
                   Name
@@ -132,29 +132,13 @@
               <th class="py-2 px-4 border">End Date</th>
               <th class="py-2 px-4 border">Revenue</th>
               <th class="py-2 px-4 border">Cost</th>
-              <!-- <th class="py-2 px-4 border">Actual / Estimate</th> -->
               <th class="py-2 px-4 border">Action</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in balances.data" :key="item.id">
-              <!-- <td class="py-1 px-4 border">
-                {{ item<select
-        v-model="proj_id"
-        v-if="projects[0]"
-        class="pr-2 ml-2 pb-2 w-full lg:w-1/4 rounded-md float-right mt-2"
-        label="project"
-        placeholder="Select Project"
-        @change="projch"
-      >
-        <option v-for="type in projects" :key="type.id" :value="type.id">
-          {{ type.name }}
-        </option>
-      </select>.name }}
-              </td> -->
               <td class="py-1 px-4 border">
                 {{ item.trade_id }}
-                <!-- {{ item.trade.name }} -->
               </td>
               <td class="py-1 px-4 border text-center">
                 {{ item.start }}
@@ -168,18 +152,9 @@
               <td class="py-1 px-4 border">
                 {{ item.cost ? item.cost : 0 }}
               </td>
-              <!-- <td class="py-1 px-4 border">
-                {{ item.actual }}
-              </td> -->
 
               <td class="py-1 px-4 border text-center" style="width: 25%">
-                <!-- <button
-                  class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"
-                  @click="edit(item.id)"
-                >
-                  <span>Edit</span>
-                </button> -->
-                <inertia-link
+                <Link
                   class="
                     border
                     rounded-xl
@@ -192,20 +167,7 @@
                   @click="actual(item.id)"
                 >
                   <span>Actual</span>
-                </inertia-link>
-                <!-- <button
-                  class="border bg-indigo-300 rounded-xl px-4 py-1 m-1"
-                  @click="actual(item.id)"
-                >
-                  <span>Actual</span>
-                </button>
-                <button
-                  class="border bg-red-500 rounded-xl px-4 py-1 m-1"
-                  @click="destroy(item.id)"
-                  v-if="item.delete"
-                >
-                  <span>Delete</span>
-                </button> -->
+                </Link>
               </td>
             </tr>
             <tr v-if="balances.data.length === 0">
@@ -226,6 +188,7 @@ import Paginator from "@/Layouts/Paginator";
 import { pickBy } from "lodash";
 import { throttle } from "lodash";
 import Multiselect from "@suadelabs/vue3-multiselect";
+import { Head, Link } from "@inertiajs/inertia-vue3";
 
 export default {
   components: {
@@ -235,6 +198,8 @@ export default {
     throttle,
     pickBy,
     Multiselect,
+    Head,
+    Link,
   },
 
   props: {

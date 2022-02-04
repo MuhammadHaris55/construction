@@ -12,6 +12,7 @@ use Illuminate\Http\Request as Req;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use \Carbon\Carbon;
 
 use App\Models\Project;
@@ -61,7 +62,7 @@ class ProjectController extends Controller
                         // 'phone_no' => $proj->phone_no,
                         // 'stn_no' => $proj->stn_no,
                         // 'ntn_no' => $proj->ntn_no,
-                        // 'delete' => Account::where('id', $proj->id)->first() ? false : true,
+                        'delete' => Trade::where('id', $proj->id)->first() ? false : true,
 
                     ],
                 ),

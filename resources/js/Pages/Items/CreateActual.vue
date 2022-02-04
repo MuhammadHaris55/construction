@@ -146,62 +146,6 @@
             <div v-if="errors.cost">{{ errors.cost }}</div>
           </div>
 
-          <!-- <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
-            <label class="my-2 mr-8 text-right w-36 font-bold"
-              >Select Type :</label
-            >
-            <select
-              class="
-                pr-2
-                pb-2
-                w-full
-                lg:w-1/4
-                rounded-md
-                placeholder-indigo-300
-              "
-              label="type"
-              placeholder="Enter Type:"
-              v-model="form.actual"
-            >
-              <option :value="0">Estimate</option>
-              <option :value="1">Actual</option>
-            </select>
-
-            <div v-if="errors.actual">{{ errors.actual }}</div>
-          </div> -->
-
-          <!-- <div class="p-2 mr-2 mb-2 ml-6 flex flex-wrap">
-            <label class="my-2 mr-8 text-right w-36 fclass="p-2 mr-2 mb-2 ml-6 flex flex-wrap">
-            <label class="my-2 mr-8 text-right w-36 font-bold"
-              >Select Project :</label
-            >
-            <multiselect
-              class="rounded-md border border-black lg:w-1/4"
-              v-model="form.project_id"
-              :options="projects"
-              placeholder="Select Project"
-              label="name"
-              track-by="id"
-            ></multiselect>
-            <div v-if="errors.project_id">
-              {{ errors.project_id }}
-            </div>
-          </div>ont-bold"
-              >Select Project :</label
-            >
-            <multiselect
-              class="rounded-md border border-black lg:w-1/4"
-              v-model="form.project_id"
-              :options="projects"
-              placeholder="Select Project"
-              label="name"
-              track-by="id"
-            ></multiselect>
-            <div v-if="errors.project_id">
-              {{ errors.project_id }}
-            </div>
-          </div> -->
-
           <div
             class="
               px-4
@@ -214,7 +158,16 @@
             "
           >
             <button
-              class="border bg-indigo-300 rounded-xl px-4 py-2 ml-4 mt-4"
+              class="
+                border
+                rounded-xl
+                px-4
+                py-2
+                ml-4
+                mt-4
+                bg-green-500
+                hover:text-white hover:bg-green-600
+              "
               type="submit"
             >
               Create Actual
