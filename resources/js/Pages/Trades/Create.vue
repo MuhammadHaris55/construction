@@ -220,7 +220,16 @@
             "
           >
             <button
-              class="border bg-indigo-300 rounded-xl px-4 py-2 ml-4 mt-4"
+              class="
+                border
+                rounded-xl
+                px-4
+                py-2
+                ml-4
+                mt-4
+                bg-green-500
+                hover:text-white hover:bg-green-600
+              "
               type="submit"
               :disabled="form.processing"
             >

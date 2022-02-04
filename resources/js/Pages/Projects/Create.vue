@@ -5,12 +5,12 @@
         Create Project
       </h2>
     </template>
-    <!-- <div
+    <div
       v-if="$page.props.flash.warning"
       class="bg-yellow-600 text-white text-center"
     >
       {{ $page.props.flash.warning }}
-    </div> -->
+    </div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
       <div class="">
         <form @submit.prevent="form.post(route('projects.store'))">
@@ -84,7 +84,7 @@
 
           <div class="p-2 mr-2 mb-2 mt-4 ml-6 flex flex-wrap">
             <label class="my-2 mr-8 text-right w-36 font-bold">Address :</label>
-            <input
+            <textarea
               type="text"
               v-model="form.address"
               class="
@@ -98,6 +98,7 @@
               label="address"
               placeholder="Enter address:"
             />
+
             <div
               class="
                 ml-2
@@ -221,7 +222,16 @@
             "
           >
             <button
-              class="border bg-indigo-300 rounded-xl px-4 py-2 ml-4 mt-4"
+              class="
+                border
+                rounded-xl
+                px-4
+                py-2
+                ml-4
+                mt-4
+                bg-green-500
+                hover:text-white hover:bg-green-600
+              "
               type="submit"
               :disabled="form.processing"
             >
@@ -251,10 +261,8 @@ export default {
     const form = useForm({
       name: null,
       address: null,
-      // email: null,
       start: null,
       end: null,
-      // ntn_no: null,
     });
     return { form };
   },

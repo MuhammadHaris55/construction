@@ -24,6 +24,8 @@ class CreateItemsTable extends Migration
             $table->foreign('trade_id')->references('id')->on('trades');
             $table->unsignedBigInteger('project_id');
             $table->foreign('project_id')->references('id')->on('projects');
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->foreign('parent_id')->references('id')->on('trades');
             $table->tinyInteger('enabled')->default('1');
             $table->timestamps();
         });
